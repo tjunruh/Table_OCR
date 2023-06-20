@@ -14,6 +14,17 @@ def load_shorthand():
     
     return shorthand
 
+def save_ignore(ignore):
+    pickle.dump(ignore, open('ignore.pkl', 'wb'))
+
+def load_ignore():
+    ignore = []
+    if(os.path.isfile('ignore.pkl')):
+        with open('ignore.pkl', 'rb') as ig_load:
+            ignore = pickle.load(ig_load)
+            
+    return ignore
+
 def load_LabelBinarizer():
     LB = LabelBinarizer()
     with open('../../LabelBinarizer/LabelBinarizer.pkl') as LB_config:

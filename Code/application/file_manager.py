@@ -25,6 +25,17 @@ def load_ignore():
             
     return ignore
 
+def save_rows_columns(rows_columns):
+    pickle.dump(rows_columns, open('rows_columns.pkl', 'wb'))
+
+def load_rows_columns():
+    rows_columns = []
+    if(os.path.isfile('rows_columns.pkl')):
+        with open('rows_columns.pkl', 'rb') as rc_load:
+            rows_columns = pickle.load(rc_load)
+
+    return rows_columns
+
 def load_LabelBinarizer():
     LB = LabelBinarizer()
     with open('../../LabelBinarizer/LabelBinarizer.pkl') as LB_config:

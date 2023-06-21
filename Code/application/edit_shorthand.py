@@ -54,12 +54,14 @@ def close():
         if((e1.get() != "") and (e2.get() != "")):
             shorthand[e1.get()] = e2.get()
     fm.save_shorthand(shorthand)
+    root.grab_release()
     root.destroy()
 
 
 def run():
     global root, title_frame, button_frame, scroll_frame, edit_frame
-    root = tk.Tk()
+    root = tk.Toplevel()
+    root.grab_set()
 
     root.title("Edit Shorthand")
     root.rowconfigure(3, weight=1)
@@ -86,7 +88,7 @@ def run():
     tk.Label(title_frame, text="     Shorthand     ", font=("Arial", 15)).grid(row=0, column=0, sticky='nsew')
     tk.Label(title_frame, text="    Expands To     ", font=("Arial", 15)).grid(row=0, column=1, sticky='nsew')
     tk.Label(title_frame, text="     ", font=("Arial", 15)).grid(row=0, column=2, sticky='nsew')
-    tk.Button(button_frame, text="Add Shorthand Entry", font=("Arial", 15), command=create_entry).grid(row=2, column=0, pady=10, padx=10) 
+    tk.Button(button_frame, text="Add Shorthand Entry", font=("Arial", 15), command=create_entry).grid(row=0, column=0, pady=10, padx=10) 
 
     initialize()
 

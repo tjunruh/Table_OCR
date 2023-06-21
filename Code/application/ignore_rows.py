@@ -56,12 +56,15 @@ def close():
             print('ran')
             ignore.append([e1.get(), e2.get()])
     fm.save_ignore(ignore)
+    root.grab_release()
     root.destroy()
 
     
 def run():
     global root, title_frame, button_frame, scroll_frame, edit_frame
     root = tk.Tk()
+
+    root.grab_set()
 
     root.title("Ignore Rows")
     root.rowconfigure(3, weight=1)

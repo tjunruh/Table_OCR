@@ -2,6 +2,7 @@ import pickle
 from sklearn.preprocessing import LabelBinarizer
 import os
 import shutil
+from tensorflow.keras.models import load_model
 
 def save_shorthand(shorthand):
     pickle.dump(shorthand, open('shorthand.pkl', 'wb'))
@@ -38,10 +39,14 @@ def load_rows_columns():
 
 def load_LabelBinarizer():
     LB = LabelBinarizer()
-    with open('../../LabelBinarizer/LabelBinarizer.pkl') as LB_config:
+    with open('../../LabelBinarizer/LabelBinarizer.pkl', 'rb') as LB_config:
         LB = pickle.load(LB_config)
 
     return LB
+
+def load_ocr_model():
+    model = load_model("../../Model")
+    return model
 
 def clear_storage():
     folder = '../../Storage'
@@ -62,3 +67,23 @@ def get_storage():
         filenames.append(folder + '/' + filename)
 
     return filenames
+
+def delete_ignored_rows():
+    folder = '../../Storage'
+    counter = 0
+    for i in range(14):
+        filename = "box_" + str(i) + ".jpg"
+        counter += 1
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+
+            if counter == 10:
+                break
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+            
+        

@@ -35,7 +35,7 @@ def extract_cells(file_path):
     contours, hierarchy = cv2.findContours(vertical_horizontal_lines, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     boundingBoxes = [cv2.boundingRect(contour) for contour in contours]
-    (contours, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes), key=lambda x:x[1][1]))
+    (contours, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes), key=lambda x:x[1][1], reverse=False))
 
     boxes = []
     for contour in contours:

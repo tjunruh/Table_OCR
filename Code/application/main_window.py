@@ -2,6 +2,10 @@ import tkinter as tk
 import file_manager as fm
 import ignore_rows as ir
 import edit_shorthand as es
+import short_to_long as sl
+import table_display as td
+import table_extractor as te
+import predict as p
 from tkinter import filedialog
 
 global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu
@@ -17,7 +21,7 @@ def close():
     root.destroy()
 
 def chose_pdf():
-    global file_display, file_name
+    global file_display, filename
     filename = filedialog.askopenfilename(initialdir = "/", title = "Select a File")
     file_display.set(filename)
 
@@ -26,7 +30,16 @@ def run_edit_shorthand():
 
 def run_ignore_rows():
     ir.run()
-    
+
+def generate_table():
+    global rows, columns, filename
+    ignore = []
+    ignore = fm.load_ignore()
+    te.extract_cells(filename)
+    predictions = p.get_predictions()
+    fm.clear_storage()
+    td.run(predictions, int(columns.get()))
+     
 def run():
     global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu
     global rows_columns
@@ -80,7 +93,7 @@ def run():
     tk.Label(row_column_frame, text="Columns in Table:", font=("Arial", 15)).grid(row=0, column=1, pady=5, padx=15)
     tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=rows, font=("Arial", 15)).grid(row=1, column=0, pady=5, padx=15)
     tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=columns, font=("Arial", 15)).grid(row=1, column=1, pady=5, padx=15)
-    tk.Button(generate_frame, text="Generate Tables", font=("Arial", 15)).grid(row=0, column=0, pady=5, padx=5)
+    tk.Button(generate_frame, text="Generate Tables", font=("Arial", 15), command=generate_table).grid(row=0, column=0, pady=5, padx=5)
 
     root.protocol("WM_DELETE_WINDOW", close)
     root.mainloop()

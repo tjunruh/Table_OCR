@@ -32,7 +32,8 @@ def run_ignore_rows():
     ir.run()
 
 def generate_table():
-    global rows, columns, filename
+    global rows, columns, filename, rows_columns
+    fm.save_rows_columns(rows_columns)
     ignore = []
     ignore = fm.load_ignore()
     te.extract_cells(filename)

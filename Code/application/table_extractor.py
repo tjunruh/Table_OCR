@@ -1,6 +1,7 @@
 from pdf2image import convert_from_path
 import cv2
 import numpy as np
+import file_manager as fm
 
 def extract_cells(file_path):
     jpgs = convert_from_path(file_path)
@@ -30,23 +31,33 @@ def extract_cells(file_path):
     vertical_horizontal_lines = cv2.addWeighted(vertical_lines, 0.5, horizontal_lines, 0.5, 0.0)
     vertical_horizontal_lines = cv2.erode(~vertical_horizontal_lines, kernel, iterations=3)
 
-    thresh, vertical_horizontal_lines = cv2.threshold(vertical_horizontal_lines, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    thresh, vertical_horizontal_lines = cv2.threshold(vertical_horizontal_lines, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
     contours, hierarchy = cv2.findContours(vertical_horizontal_lines, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    boundingBoxes = [cv2.boundingRect(contour) for contour in contours]
-    (contours, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes), key=lambda x:x[1][1], reverse=False))
-
-    boxes = []
+    boundingBoxes = []
     for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        if (w<1000 and h<500):
-            image = cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
-            boxes.append([x,y,w,h])
+        boundingBox = cv2.boundingRect(contour)
+        if ((boundingBox[2]<1000) and (boundingBox[3]<500)):
+            boundingBoxes.append(boundingBox)
+    rows_columns = []
+    rows_columns = fm.load_rows_columns()
+    for row, column in rows_columns:
+        columns = int(column)
+    rows = int(len(boundingBoxes) / int(columns))
+    boundingBoxes = sorted(boundingBoxes, key=lambda x:x[1])
+    boxes = []
+    for row in range(rows):
+        start_position = (row*columns)
+        grabbed_section = boundingBoxes[int(start_position):int(start_position + columns)]
+        grabbed_section = sorted(grabbed_section, key=lambda x:x[0])
+        boxes.extend(grabbed_section)
+    
 
     for i, box in enumerate(boxes):
 
         x, y, w, h = box
+        print(str(x) + " , " + str(y))
         box_expand = 2
         roi = img[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
 

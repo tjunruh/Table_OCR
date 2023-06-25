@@ -9,7 +9,7 @@ def run(predictions, columns):
     frame = tk.Frame(root)
     frame.grid_columnconfigure(0, weight = 1)
     frame.grid_rowconfigure(0, weight = 1)
-    cells = [[predictions[(columns - c - 1) + (r * columns)] for c in range(columns)] for r in range(rows)]
+    cells = [[predictions[c + (r * columns)] for c in range(columns)] for r in range(rows)]
     sheet = Sheet(frame, data=cells)
     sheet.enable_bindings()
     sheet.font(newfont = ("century Gothic", 9, "normal"))

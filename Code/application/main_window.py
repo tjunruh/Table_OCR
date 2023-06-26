@@ -16,7 +16,8 @@ def close():
     global rows_columns
     rows_columns.clear()
     if((str(rows.get()).isnumeric()) and (str(columns.get()).isnumeric())):
-        rows_columns.append([rows.get(), columns.get()])
+        rows_columns.append(rows.get())
+        rows_columns.append(columns.get())
         fm.save_rows_columns(rows_columns)
     root.destroy()
 
@@ -33,7 +34,10 @@ def run_ignore_rows():
 
 def generate_table():
     global rows, columns, filename, rows_columns
-    fm.save_rows_columns(rows_columns)
+    if((str(rows.get()).isnumeric()) and (str(columns.get()).isnumeric())):
+        rows_columns.append(rows.get())
+        rows_columns.append(columns.get())
+        fm.save_rows_columns(rows_columns)
     ignore = []
     ignore = fm.load_ignore()
     te.extract_cells(filename)
@@ -81,10 +85,10 @@ def run():
     rows_columns = fm.load_rows_columns()
     rows = tk.StringVar(root)
     columns = tk.StringVar(root)
-    
-    for row, column in rows_columns:
-        rows.set(row)
-        columns.set(column)
+
+    if rows_columns:
+        rows.set(rows_columns[0])
+        columns.set(rows_columns[1])
 
     file_display = tk.StringVar(root)
     

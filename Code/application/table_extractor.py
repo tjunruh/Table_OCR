@@ -42,8 +42,7 @@ def extract_cells(file_path):
             boundingBoxes.append(boundingBox)
     rows_columns = []
     rows_columns = fm.load_rows_columns()
-    for row, column in rows_columns:
-        columns = int(column)
+    columns = int(rows_columns[1])
     rows = int(len(boundingBoxes) / int(columns))
     boundingBoxes = sorted(boundingBoxes, key=lambda x:x[1])
     boxes = []

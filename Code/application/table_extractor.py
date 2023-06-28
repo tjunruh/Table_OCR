@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import file_manager as fm
 
+global num_boxes
+
 def pdf_to_jpg(file_path):
     jpgs = convert_from_path(file_path)
 
@@ -12,10 +14,12 @@ def pdf_to_jpg(file_path):
     return jpgs
 
 def rotate_jpgs(jpgs):
+    imgs = []
     for page in range(len(jpgs)):
         img = cv2.imread('page' + str(page) + '.jpg')
         img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-    return img
+        imgs.append(img)
+    return imgs
 
 def prepare_binary_image(img):
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -66,21 +70,26 @@ def sort_boundingBoxes(boundingBoxes):
     return boxes
 
 def save_boxes(boxes, img):
+    global num_boxes
 
-    for i, box in enumerate(boxes):
+    for box in boxes:
         x, y, w, h = box
         box_expand = 2
         roi = img[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
-        filename = f'../../Storage/box_{i}.jpg'
+        filename = f'../../Storage/{num_boxes}.jpg'
         cv2.imwrite(filename, roi)
+        num_boxes += 1
         
 def extract_cells(file_path):
-   jpgs = pdf_to_jpg(file_path)
-   img = rotate_jpgs(jpgs)
-   img_bin_otsu = prepare_binary_image(img)
-   vertical_lines = get_vertical_lines(img_bin_otsu, img)
-   horizontal_lines = get_horizontal_lines(img_bin_otsu, img)
-   vertical_horizontal_lines = get_vertical_horizontal_lines(vertical_lines, horizontal_lines)
-   boundingBoxes = get_boundingBoxes(vertical_horizontal_lines)
-   boxes = sort_boundingBoxes(boundingBoxes)
-   save_boxes(boxes, img)
+    global num_boxes
+    num_boxes = 0
+    jpgs = pdf_to_jpg(file_path)
+    imgs = rotate_jpgs(jpgs)
+    for img in imgs:
+        img_bin_otsu = prepare_binary_image(img)
+        vertical_lines = get_vertical_lines(img_bin_otsu, img)
+        horizontal_lines = get_horizontal_lines(img_bin_otsu, img)
+        vertical_horizontal_lines = get_vertical_horizontal_lines(vertical_lines, horizontal_lines)
+        boundingBoxes = get_boundingBoxes(vertical_horizontal_lines)
+        boxes = sort_boundingBoxes(boundingBoxes)
+        save_boxes(boxes, img)

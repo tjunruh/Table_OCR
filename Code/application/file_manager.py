@@ -65,8 +65,20 @@ def get_storage():
     folder = '../../Storage'
     for filename in os.listdir(folder):
         filenames.append(folder + '/' + filename)
-
+    filenames = sort_storage(filenames)
     return filenames
+
+def sort_storage(filenames):
+    sorted_filenames = []
+    for filename in filenames:
+        num = filename.replace('.jpg', '')
+        num = num.replace('../../Storage/', '')
+        sorted_filenames.append(int(num))
+    sorted_filenames.sort()
+    for i in range(len(sorted_filenames)):
+        sorted_filenames[i] = '../../Storage/' + str(sorted_filenames[i]) + '.jpg'
+    return sorted_filenames
+    
 
 def delete_ignored_rows():
     ignore = []
@@ -81,7 +93,7 @@ def delete_ignored_rows():
 def delete_cells_in_range(start_cell, stop_cell):
     folder = '../../Storage'
     for i in range(start_cell, stop_cell):
-        filename = "box_" + str(i) + ".jpg"
+        filename = str(i) + ".jpg"
         file_path = os.path.join(folder, filename)
         try:
             if os.path.isfile(file_path) or os.path.islink(file_path):

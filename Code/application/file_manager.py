@@ -69,11 +69,19 @@ def get_storage():
     return filenames
 
 def delete_ignored_rows():
+    ignore = []
+    ignore = load_ignore()
+    rows_columns = []
+    rows_columns = load_rows_columns()
+    for page, row in ignore:
+        start_cell = (int(page) - 1)*int(rows_columns[0])*int(rows_columns[1]) + (int(row) - 1)*int(rows_columns[1])
+        stop_cell = start_cell + int(rows_columns[1])
+        delete_cells_in_range(start_cell, stop_cell)
+
+def delete_cells_in_range(start_cell, stop_cell):
     folder = '../../Storage'
-    counter = 0
-    for i in range(14):
+    for i in range(start_cell, stop_cell):
         filename = "box_" + str(i) + ".jpg"
-        counter += 1
         file_path = os.path.join(folder, filename)
         try:
             if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -81,8 +89,6 @@ def delete_ignored_rows():
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
 
-            if counter == 10:
-                break
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
             

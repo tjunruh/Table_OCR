@@ -43,9 +43,9 @@ def initialize():
     ignore = fm.load_ignore()
     for page, row in ignore:
         create_entry()
-        row = rows - 1
-        ignore_list[row][0].insert(0, page)
-        ignore_list[row][1].insert(0, row)
+        _row = rows - 1
+        ignore_list[_row][0].insert(0, page)
+        ignore_list[_row][1].insert(0, row)
 
 def close():
     global root, title_frame, button_frame, scroll_frame, edit_frame

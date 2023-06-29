@@ -4,6 +4,7 @@ import file_manager as fm
 from sklearn.preprocessing import LabelBinarizer
 import imutils
 import numpy as np
+import short_to_long as sl
 
 global model, LB
 
@@ -72,6 +73,8 @@ def get_predictions():
         word = get_word(letters)
         print(word)
         predictions.append(word)
+
+    predictions = sl.short_to_long(predictions)
 
     return predictions
 

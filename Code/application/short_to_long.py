@@ -4,7 +4,7 @@ def short_to_long(predictions):
     shorthand = {}
     shorthand = fm.load_shorthand()
     for i in range(len(predictions)):
-        if shorthand.has_key(predictions[i]):
+        if predictions[i] in shorthand:
             predictions[i] = shorthand[predictions[i]]
 
     return predictions

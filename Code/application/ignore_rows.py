@@ -53,7 +53,6 @@ def close():
     ignore.clear()
     for e1, e2, b1 in ignore_list:
         if(str(e1.get()).isnumeric() and str(e2.get()).isnumeric()):
-            print('ran')
             ignore.append([e1.get(), e2.get()])
     fm.save_ignore(ignore)
     root.grab_release()

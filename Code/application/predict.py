@@ -59,7 +59,6 @@ def get_word(letters):
     if letters:
         for letter in letters:
             word += letter
-    #word = "".join(letters)
     return word
 
 def get_predictions(root, pb):

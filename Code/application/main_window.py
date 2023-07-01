@@ -9,6 +9,7 @@ import predict as p
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter.messagebox import showinfo
+from tkinter import messagebox
 
 global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb
 global rows_columns
@@ -34,6 +35,9 @@ def run_edit_shorthand():
 def run_ignore_rows():
     ir.run()
 
+def error():
+    messagebox.showerror('Could not run predictions', 'Do you have rows and columns set correctly?\nAre you ignoring all rows that need to be ignored?')
+
 def generate_table():
     global rows, columns, filename, rows_columns, pb
     root.update_idletasks()
@@ -44,9 +48,10 @@ def generate_table():
     ignore = []
     ignore = fm.load_ignore()
     te.extract_cells(filename)
-    predictions = p.get_predictions(root, pb)
+    predictions = p.get_predictions(root, pb, error)
     fm.clear_storage()
-    td.run(predictions, int(columns.get()))
+    if predictions:
+        td.run(predictions, int(columns.get()))
      
 def run():
     global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb

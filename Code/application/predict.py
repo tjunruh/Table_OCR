@@ -7,7 +7,7 @@ import numpy as np
 import short_to_long as sl
 import time
 
-global model, LB
+global model, LB, error
 
 def hex_to_char(hex_input):
     return(chr(int(hex_input[0], 16)))
@@ -25,7 +25,7 @@ def sort_contours(cnts, method="left-to-right"):
     return (cnts, boundingBoxes)
 
 def get_letters(img):
-    global model, LB
+    global model, LB, error
     letters = []
     image = cv2.imread(img)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -44,14 +44,17 @@ def get_letters(img):
                 cv2.rectangle(image, (x,y), (x+w,y+h), (0,255,0), 2)
                 roi = gray[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
                 thresh = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-                thresh = cv2.resize(thresh, (32, 32), interpolation = cv2.INTER_CUBIC)
-                thresh = thresh.astype("float32") / 255.0
-                thresh = np.expand_dims(thresh, axis=-1)
-                thresh = thresh.reshape(1,32,32,1)
-                ypred = model.predict(thresh)
-                ypred = LB.inverse_transform(ypred)
-                [x] = hex_to_char(ypred)
-                letters.append(x)
+                try:
+                    thresh = cv2.resize(thresh, (32, 32), interpolation = cv2.INTER_CUBIC)
+                    thresh = thresh.astype("float32") / 255.0
+                    thresh = np.expand_dims(thresh, axis=-1)
+                    thresh = thresh.reshape(1,32,32,1)
+                    ypred = model.predict(thresh)
+                    ypred = LB.inverse_transform(ypred)
+                    [x] = hex_to_char(ypred)
+                    letters.append(x)
+                except:
+                    error = True
         return letters
 
 def get_word(letters):
@@ -61,8 +64,9 @@ def get_word(letters):
             word += letter
     return word
 
-def get_predictions(root, pb):
-    global model, LB
+def get_predictions(root, pb, messagebox):
+    global model, LB, error
+    error = False
     LB = fm.load_LabelBinarizer()
     model = fm.load_ocr_model()
     predictions = []
@@ -72,6 +76,11 @@ def get_predictions(root, pb):
     job_num = 0
     for cell in cells:
         letters = get_letters(cell)
+        if error:
+            error = False
+            predictions.clear()
+            messagebox()
+            break
         word = get_word(letters)
         predictions.append(word)
         pb['value'] = int((job_num / job_length) * 100)

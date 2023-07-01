@@ -36,7 +36,7 @@ def run_ignore_rows():
     ir.run()
 
 def predict_error():
-    messagebox.showerror('Could not run predictions', 'Do you have rows and columns set correctly?\nAre you ignoring all rows that need to be ignored?')
+    messagebox.showerror('Could not run predictions', '- Do you have rows and columns set correctly?\n- Are you ignoring all rows that need to be ignored?\n- Did you select a valid pdf?')
 
 def extract_error():
     messagebox.showerror('Could not extract cells', 'You must select a PDF file')

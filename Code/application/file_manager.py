@@ -26,6 +26,17 @@ def load_ignore():
             
     return ignore
 
+def save_default_directory(default_directory):
+    pickle.dump(default_directory, open('default_directory.pkl', 'wb'))
+
+def load_default_directory():
+    default_directory = ''
+    if(os.path.isfile('default_directory.pkl')):
+        with open('default_directory.pkl', 'rb') as dd_load:
+            default_directory = pickle.load(dd_load)
+
+    return default_directory
+
 def save_rows_columns(rows_columns):
     pickle.dump(rows_columns, open('rows_columns.pkl', 'wb'))
 

@@ -2,6 +2,7 @@ import tkinter as tk
 import file_manager as fm
 import ignore_rows as ir
 import edit_shorthand as es
+import default_directory as dd
 import short_to_long as sl
 import table_display as td
 import table_extractor as te
@@ -26,7 +27,7 @@ def close():
 
 def chose_pdf():
     global file_display, filename
-    filename = filedialog.askopenfilename(initialdir = "/", title = "Select a File")
+    filename = filedialog.askopenfilename(initialdir = fm.load_default_directory(), title = "Select a File")
     file_display.set(filename)
 
 def run_edit_shorthand():
@@ -34,6 +35,9 @@ def run_edit_shorthand():
 
 def run_ignore_rows():
     ir.run()
+
+def run_default_directory():
+    dd.run()
 
 def predict_error():
     messagebox.showerror('Could not run predictions', '- Do you have rows and columns set correctly?\n- Are you ignoring all rows that need to be ignored?\n- Did you select a valid pdf?')
@@ -68,6 +72,7 @@ def run():
     menubar = tk.Menu(root)
     menubar.add_command(label="Edit Shorthand", command=run_edit_shorthand)
     menubar.add_command(label="Ignore Rows", command=run_ignore_rows)
+    menubar.add_command(label="Default Directory", command=run_default_directory)
     
     root.config(menu=menubar)
     

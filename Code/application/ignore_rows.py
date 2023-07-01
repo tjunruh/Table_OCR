@@ -65,7 +65,7 @@ def save():
     
 def run():
     global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-    root = tk.Tk()
+    root = tk.Toplevel()
 
     root.grab_set()
 

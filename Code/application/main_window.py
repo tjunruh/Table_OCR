@@ -35,8 +35,11 @@ def run_edit_shorthand():
 def run_ignore_rows():
     ir.run()
 
-def error():
+def predict_error():
     messagebox.showerror('Could not run predictions', 'Do you have rows and columns set correctly?\nAre you ignoring all rows that need to be ignored?')
+
+def extract_error():
+    messagebox.showerror('Could not extract cells', 'You must select a PDF file')
 
 def generate_table():
     global rows, columns, filename, rows_columns, pb
@@ -47,11 +50,11 @@ def generate_table():
         fm.save_rows_columns(rows_columns)
     ignore = []
     ignore = fm.load_ignore()
-    te.extract_cells(filename)
-    predictions = p.get_predictions(root, pb, error)
-    fm.clear_storage()
-    if predictions:
-        td.run(predictions, int(columns.get()))
+    if te.extract_cells(filename, extract_error) != -1:
+        predictions = p.get_predictions(root, pb, predict_error)
+        fm.clear_storage()
+        if predictions:
+            td.run(predictions, int(columns.get()))
      
 def run():
     global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb

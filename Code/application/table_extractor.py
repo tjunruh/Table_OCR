@@ -3,15 +3,21 @@ import cv2
 import numpy as np
 import file_manager as fm
 
-global num_boxes
+global num_boxes, error
 
 def pdf_to_jpg(file_path):
-    jpgs = convert_from_path(file_path)
+    global error
+    error = False
+    try:
+        jpgs = convert_from_path(file_path)
 
-    for page in range(len(jpgs)):
-        jpgs[page].save('page' + str(page) + '.jpg', 'JPEG')
-
-    return jpgs
+        for page in range(len(jpgs)):
+            jpgs[page].save('page' + str(page) + '.jpg', 'JPEG')
+            return jpgs
+    except:
+        error = True
+        return None
+    
 
 def rotate_jpgs(jpgs):
     imgs = []
@@ -80,16 +86,22 @@ def save_boxes(boxes, img):
         cv2.imwrite(filename, roi)
         num_boxes += 1
         
-def extract_cells(file_path):
-    global num_boxes
+def extract_cells(file_path, messagebox):
+    global num_boxes, error
     num_boxes = 0
     jpgs = pdf_to_jpg(file_path)
-    imgs = rotate_jpgs(jpgs)
-    for img in imgs:
-        img_bin_otsu = prepare_binary_image(img)
-        vertical_lines = get_vertical_lines(img_bin_otsu, img)
-        horizontal_lines = get_horizontal_lines(img_bin_otsu, img)
-        vertical_horizontal_lines = get_vertical_horizontal_lines(vertical_lines, horizontal_lines)
-        boundingBoxes = get_boundingBoxes(vertical_horizontal_lines)
-        boxes = sort_boundingBoxes(boundingBoxes)
-        save_boxes(boxes, img)
+    if not error:
+        imgs = rotate_jpgs(jpgs)
+        for img in imgs:
+            img_bin_otsu = prepare_binary_image(img)
+            vertical_lines = get_vertical_lines(img_bin_otsu, img)
+            horizontal_lines = get_horizontal_lines(img_bin_otsu, img)
+            vertical_horizontal_lines = get_vertical_horizontal_lines(vertical_lines, horizontal_lines)
+            boundingBoxes = get_boundingBoxes(vertical_horizontal_lines)
+            boxes = sort_boundingBoxes(boundingBoxes)
+            save_boxes(boxes, img)
+        return 0
+    else:
+        messagebox()
+        return -1
+        

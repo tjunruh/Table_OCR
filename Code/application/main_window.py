@@ -7,8 +7,10 @@ import table_display as td
 import table_extractor as te
 import predict as p
 from tkinter import filedialog
+from tkinter import ttk
+from tkinter.messagebox import showinfo
 
-global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu
+global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb
 global rows_columns
 
 def close():
@@ -33,7 +35,8 @@ def run_ignore_rows():
     ir.run()
 
 def generate_table():
-    global rows, columns, filename, rows_columns
+    global rows, columns, filename, rows_columns, pb
+    root.update_idletasks()
     if((str(rows.get()).isnumeric()) and (str(columns.get()).isnumeric())):
         rows_columns.append(rows.get())
         rows_columns.append(columns.get())
@@ -41,17 +44,17 @@ def generate_table():
     ignore = []
     ignore = fm.load_ignore()
     te.extract_cells(filename)
-    predictions = p.get_predictions()
+    predictions = p.get_predictions(root, pb)
     fm.clear_storage()
     td.run(predictions, int(columns.get()))
      
 def run():
-    global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu
+    global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb
     global rows_columns
     root = tk.Tk()
 
     root.title("Handwritten Table Interpreter")
-    root.rowconfigure(3, weight=1)
+    root.rowconfigure(4, weight=1)
     root.columnconfigure(2, weight=1)
 
     menubar = tk.Menu(root)
@@ -81,6 +84,9 @@ def run():
     generate_frame.columnconfigure(0, weight=1)
     generate_frame.grid(row=3, column=0, sticky='nsew')
 
+    pb = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=280)
+    pb.grid(row=4, column=0, padx=10, pady=20)
+
     rows_columns = []
     rows_columns = fm.load_rows_columns()
     rows = tk.StringVar(root)
@@ -99,6 +105,6 @@ def run():
     tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=rows, font=("Arial", 15)).grid(row=1, column=0, pady=5, padx=15)
     tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=columns, font=("Arial", 15)).grid(row=1, column=1, pady=5, padx=15)
     tk.Button(generate_frame, text="Generate Tables", font=("Arial", 15), command=generate_table).grid(row=0, column=0, pady=5, padx=5)
-
+                         
     root.protocol("WM_DELETE_WINDOW", close)
     root.mainloop()

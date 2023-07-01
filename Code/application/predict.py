@@ -5,6 +5,7 @@ from sklearn.preprocessing import LabelBinarizer
 import imutils
 import numpy as np
 import short_to_long as sl
+import time
 
 global model, LB
 
@@ -61,20 +62,28 @@ def get_word(letters):
     #word = "".join(letters)
     return word
 
-def get_predictions():
+def get_predictions(root, pb):
     global model, LB
     LB = fm.load_LabelBinarizer()
     model = fm.load_ocr_model()
     predictions = []
     fm.delete_ignored_rows()
     cells = fm.get_storage()
+    job_length = len(cells)
+    job_num = 0
     for cell in cells:
         letters = get_letters(cell)
         word = get_word(letters)
-        print(word)
         predictions.append(word)
+        pb['value'] = int((job_num / job_length) * 100)
+        job_num += 1
+        root.update_idletasks()
+    pb['value'] = 100
+    root.update_idletasks()
+    time.sleep(1)
+    pb['value'] = 0
+    root.update_idletasks()
 
     predictions = sl.short_to_long(predictions)
 
     return predictions
-

@@ -26,9 +26,9 @@ def close():
     root.destroy()
 
 def chose_pdf():
-    global file_display, filename
-    filename = filedialog.askopenfilename(initialdir = fm.load_default_directory(), title = "Select a File")
-    file_display.set(filename)
+    global file_display, file_name
+    file_name = filedialog.askopenfilename(initialdir = fm.load_default_directory(), title = "Select a File")
+    file_display.set(file_name)
 
 def run_edit_shorthand():
     es.run()
@@ -46,7 +46,7 @@ def extract_error():
     messagebox.showerror('Could not extract cells', 'You must select a PDF file')
 
 def generate_table():
-    global rows, columns, filename, rows_columns, pb
+    global rows, columns, file_name, rows_columns, pb
     root.update_idletasks()
     if((str(rows.get()).isnumeric()) and (str(columns.get()).isnumeric())):
         rows_columns.append(rows.get())
@@ -54,7 +54,7 @@ def generate_table():
         fm.save_rows_columns(rows_columns)
     ignore = []
     ignore = fm.load_ignore()
-    if te.extract_cells(filename, extract_error) != -1:
+    if te.extract_cells(file_name, extract_error) != -1:
         predictions = p.get_predictions(root, pb, predict_error)
         fm.clear_storage()
         if predictions:
@@ -63,6 +63,7 @@ def generate_table():
 def run():
     global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb
     global rows_columns
+    file_name = ""
     root = tk.Tk()
 
     root.title("Handwritten Table Interpreter")

@@ -4,6 +4,8 @@ import os
 import shutil
 from tensorflow.keras.models import load_model
 
+exe_path = '../../'
+
 def save_shorthand(shorthand):
     pickle.dump(shorthand, open('shorthand.pkl', 'wb'))
 
@@ -50,17 +52,19 @@ def load_rows_columns():
 
 def load_LabelBinarizer():
     LB = LabelBinarizer()
-    with open('../../LabelBinarizer/LabelBinarizer.pkl', 'rb') as LB_config:
+    path = exe_path + '../../LabelBinarizer/LabelBinarizer.pkl'
+    with open(path, 'rb') as LB_config:
         LB = pickle.load(LB_config)
 
     return LB
 
 def load_ocr_model():
-    model = load_model("../../Model")
+    path = exe_path + "../../Model"
+    model = load_model(path)
     return model
 
 def clear_storage():
-    folder = '../../Storage'
+    folder = exe_path + '../../Storage'
     for filename in os.listdir(folder):
         file_path = os.path.join(folder, filename)
         try:
@@ -73,7 +77,7 @@ def clear_storage():
             
 def get_storage():
     filenames = []
-    folder = '../../Storage'
+    folder = exe_path + '../../Storage'
     for filename in os.listdir(folder):
         filenames.append(folder + '/' + filename)
     filenames = sort_storage(filenames)
@@ -81,13 +85,14 @@ def get_storage():
 
 def sort_storage(filenames):
     sorted_filenames = []
+    folder = exe_path + '../../Storage/'
     for filename in filenames:
         num = filename.replace('.jpg', '')
-        num = num.replace('../../Storage/', '')
+        num = num.replace(folder , '')
         sorted_filenames.append(int(num))
     sorted_filenames.sort()
     for i in range(len(sorted_filenames)):
-        sorted_filenames[i] = '../../Storage/' + str(sorted_filenames[i]) + '.jpg'
+        sorted_filenames[i] = folder + str(sorted_filenames[i]) + '.jpg'
     return sorted_filenames
     
 
@@ -102,7 +107,7 @@ def delete_ignored_rows():
         delete_cells_in_range(start_cell, stop_cell)
 
 def delete_cells_in_range(start_cell, stop_cell):
-    folder = '../../Storage'
+    folder = exe_path + '../../Storage'
     for i in range(start_cell, stop_cell):
         filename = str(i) + ".jpg"
         file_path = os.path.join(folder, filename)

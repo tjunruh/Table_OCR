@@ -49,7 +49,7 @@ def get_letters(img):
                     thresh = thresh.astype("float32") / 255.0
                     thresh = np.expand_dims(thresh, axis=-1)
                     thresh = thresh.reshape(1,32,32,1)
-                    ypred = model.predict(thresh)
+                    ypred = model.predict(thresh, verbose=0)
                     ypred = LB.inverse_transform(ypred)
                     [x] = hex_to_char(ypred)
                     letters.append(x)

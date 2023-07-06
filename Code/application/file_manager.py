@@ -4,48 +4,56 @@ import os
 import shutil
 from tensorflow.keras.models import load_model
 
-exe_path = '../../'
+exe_path = ''
 
 def save_shorthand(shorthand):
-    pickle.dump(shorthand, open('shorthand.pkl', 'wb'))
+    path = exe_path + '../../Settings/shorthand.pkl'
+    pickle.dump(shorthand, open(path, 'wb'))
 
 def load_shorthand():
     shorthand = {}
-    if(os.path.isfile('shorthand.pkl')):
-        with open('shorthand.pkl', 'rb') as sh_load:
+    path = exe_path + '../../Settings/shorthand.pkl'
+    if(os.path.isfile(path)):
+        with open(path, 'rb') as sh_load:
             shorthand = pickle.load(sh_load)
     
     return shorthand
 
 def save_ignore(ignore):
-    pickle.dump(ignore, open('ignore.pkl', 'wb'))
+    path = exe_path + '../../Settings/ignore.pkl'
+    pickle.dump(ignore, open(path, 'wb'))
 
 def load_ignore():
     ignore = []
-    if(os.path.isfile('ignore.pkl')):
-        with open('ignore.pkl', 'rb') as ig_load:
+    path = exe_path + '../../Settings/ignore.pkl'
+    if(os.path.isfile(path)):
+        with open(path, 'rb') as ig_load:
             ignore = pickle.load(ig_load)
             
     return ignore
 
 def save_default_directory(default_directory):
-    pickle.dump(default_directory, open('default_directory.pkl', 'wb'))
+    path = exe_path + '../../Settings/default_directory.pkl'
+    pickle.dump(default_directory, open(path, 'wb'))
 
 def load_default_directory():
     default_directory = ''
-    if(os.path.isfile('default_directory.pkl')):
-        with open('default_directory.pkl', 'rb') as dd_load:
+    path = exe_path + '../../Settings/default_directory.pkl'
+    if(os.path.isfile(path)):
+        with open(path, 'rb') as dd_load:
             default_directory = pickle.load(dd_load)
 
     return default_directory
 
 def save_rows_columns(rows_columns):
-    pickle.dump(rows_columns, open('rows_columns.pkl', 'wb'))
+    path = exe_path + '../../Settings/rows_columns.pkl'
+    pickle.dump(rows_columns, open(path, 'wb'))
 
 def load_rows_columns():
     rows_columns = []
-    if(os.path.isfile('rows_columns.pkl')):
-        with open('rows_columns.pkl', 'rb') as rc_load:
+    path = exe_path + '../../Settings/rows_columns.pkl'
+    if(os.path.isfile(path)):
+        with open(path, 'rb') as rc_load:
             rows_columns = pickle.load(rc_load)
 
     return rows_columns

@@ -13,7 +13,8 @@ def pdf_to_jpg(file_path):
 
         for page in range(len(jpgs)):
             jpgs[page].save('page' + str(page) + '.jpg', 'JPEG')
-            return jpgs
+
+        return jpgs
     except:
         error = True
         return None

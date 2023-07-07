@@ -90,8 +90,6 @@ def get_predictions(root, pb, messagebox, line_thickness, find_shorthand_matches
                     word = default_word 
         else:
             letters = get_letters(cell, line_thickness)
-            if error:
-                break
             word = get_word(letters)
 
         if error:

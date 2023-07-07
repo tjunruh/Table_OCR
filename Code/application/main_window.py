@@ -50,10 +50,10 @@ def extract_error():
 def generate_table():
     global rows, columns, file_name, rows_columns, pb, find_shorthand_matches
     root.update_idletasks()
-    if((str(rows.get()).isnumeric()) and (str(columns.get()).isnumeric())):
-        rows_columns.append(rows.get())
-        rows_columns.append(columns.get())
-        fm.save_rows_columns(rows_columns)
+    rows_columns.clear()
+    rows_columns.append(rows.get())
+    rows_columns.append(columns.get())
+    fm.save_rows_columns(rows_columns)
     ignore = []
     ignore = fm.load_ignore()
     if te.extract_cells(file_name, extract_error) != -1:
@@ -123,8 +123,8 @@ def run():
     tk.Label(display_file_frame, font=("Arial", 12), textvariable=file_display).grid(row=0, column=0, pady=10, padx=10)
     tk.Label(row_column_frame, text="Rows in Table:", font=("Arial", 15)).grid(row=0, column=0, pady=5, padx=15)
     tk.Label(row_column_frame, text="Columns in Table:", font=("Arial", 15)).grid(row=0, column=1, pady=5, padx=15)
-    tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=rows, font=("Arial", 15)).grid(row=1, column=0, pady=5, padx=15)
-    tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=columns, font=("Arial", 15)).grid(row=1, column=1, pady=5, padx=15)
+    tk.Spinbox(row_column_frame, from_=1, to=100, increment=1.0, textvariable=rows, font=("Arial", 15), state='readonly').grid(row=1, column=0, pady=5, padx=15)
+    tk.Spinbox(row_column_frame, from_=1, to=100, increment=1.0, textvariable=columns, font=("Arial", 15), state='readonly').grid(row=1, column=1, pady=5, padx=15)
 
     line_thickness = tk.StringVar(root, fm.load_line_thickness())
     ttk.Separator(line_thickness_frame, orient='horizontal').pack(fill='x')

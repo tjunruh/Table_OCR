@@ -19,3 +19,11 @@ def short_to_long(predictions):
                 predictions[i] = predictions[i].replace(key, value)
 
     return predictions
+
+def in_short(prediction):
+    shorthand = {}
+    shorthand = fm.load_shorthand()
+    if prediction in shorthand:
+        return True
+    else:
+        return False

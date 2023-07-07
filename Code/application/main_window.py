@@ -12,13 +12,15 @@ from tkinter import ttk
 from tkinter.messagebox import showinfo
 from tkinter import messagebox
 
-global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb
+global root, select_file_frame, display_file_frame, row_column_frame, line_thickness_frame, generate_frame, rows, columns, file_display, file_name, menu, pb, line_thickness, find_shorthand_matches
 global rows_columns
 
 def close():
-    global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu
+    global root, select_file_frame, display_file_frame, row_column_frame, line_thickness_frame, generate_frame, rows, columns, file_display, file_name, menu, line_thickness, find_shorthand_matches
     global rows_columns
     rows_columns.clear()
+    fm.save_line_thickness(line_thickness.get())
+    fm.save_find_shorthand_matches(find_shorthand_matches.get())
     if((str(rows.get()).isnumeric()) and (str(columns.get()).isnumeric())):
         rows_columns.append(rows.get())
         rows_columns.append(columns.get())
@@ -46,7 +48,7 @@ def extract_error():
     messagebox.showerror('Could not extract cells', 'You must select a PDF file')
 
 def generate_table():
-    global rows, columns, file_name, rows_columns, pb
+    global rows, columns, file_name, rows_columns, pb, find_shorthand_matches
     root.update_idletasks()
     if((str(rows.get()).isnumeric()) and (str(columns.get()).isnumeric())):
         rows_columns.append(rows.get())
@@ -55,19 +57,19 @@ def generate_table():
     ignore = []
     ignore = fm.load_ignore()
     if te.extract_cells(file_name, extract_error) != -1:
-        predictions = p.get_predictions(root, pb, predict_error)
+        predictions = p.get_predictions(root, pb, predict_error, int(line_thickness.get()), find_shorthand_matches.get())
         fm.clear_storage()
         if predictions:
             td.run(predictions, int(columns.get()))
      
 def run():
-    global root, select_file_frame, display_file_frame, row_column_frame, generate_frame, rows, columns, file_display, file_name, menu, pb
+    global root, select_file_frame, display_file_frame, row_column_frame, line_thickness_frame, generate_frame, rows, columns, file_display, file_name, menu, pb, line_thickness, find_shorthand_matches
     global rows_columns
     file_name = ""
     root = tk.Tk()
 
     root.title("Handwritten Table Interpreter")
-    root.rowconfigure(4, weight=1)
+    root.rowconfigure(6, weight=1)
     root.columnconfigure(2, weight=1)
 
     menubar = tk.Menu(root)
@@ -93,13 +95,18 @@ def run():
     row_column_frame.columnconfigure(1, weight=1)
     row_column_frame.grid(row=2, column=0, sticky='nsew')
 
+    line_thickness_frame = tk.Frame(root)
+    line_thickness_frame.rowconfigure(0, weight=1)
+    line_thickness_frame.columnconfigure(0, weight=1)
+    line_thickness_frame.grid(row=3, column=0, sticky='nsew')
+
     generate_frame = tk.Frame(root)
     generate_frame.rowconfigure(0, weight=1)
     generate_frame.columnconfigure(0, weight=1)
-    generate_frame.grid(row=3, column=0, sticky='nsew')
+    generate_frame.grid(row=4, column=0, sticky='nsew')
 
     pb = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=280)
-    pb.grid(row=4, column=0, padx=10, pady=20)
+    pb.grid(row=5, column=0, padx=10, pady=20)
 
     rows_columns = []
     rows_columns = fm.load_rows_columns()
@@ -118,6 +125,19 @@ def run():
     tk.Label(row_column_frame, text="Columns in Table:", font=("Arial", 15)).grid(row=0, column=1, pady=5, padx=15)
     tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=rows, font=("Arial", 15)).grid(row=1, column=0, pady=5, padx=15)
     tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=columns, font=("Arial", 15)).grid(row=1, column=1, pady=5, padx=15)
+
+    line_thickness = tk.StringVar(root, fm.load_line_thickness())
+
+    values = {"Thin Line Thickness" : "2",
+              "Normal Line Thickness" : "3",
+              "Thick Line Thickness" : "4"}
+
+    for text, value in values.items():
+        tk.Radiobutton(line_thickness_frame, text=text, variable=line_thickness, value=value, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
+
+    find_shorthand_matches = tk.IntVar(root, fm.load_find_shorthand_matches())
+    tk.Checkbutton(line_thickness_frame, text="Find shorthand matches", variable=find_shorthand_matches, onvalue=1, offvalue=0, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
+        
     tk.Button(generate_frame, text="Generate Tables", font=("Arial", 15), command=generate_table).grid(row=0, column=0, pady=5, padx=5)
                          
     root.protocol("WM_DELETE_WINDOW", close)

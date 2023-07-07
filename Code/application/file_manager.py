@@ -58,6 +58,32 @@ def load_rows_columns():
 
     return rows_columns
 
+def save_line_thickness(line_thickness):
+    path = exe_path + '../../Settings/line_thickness.pkl'
+    pickle.dump(line_thickness, open(path, 'wb'))
+
+def load_line_thickness():
+    line_thickness = "2"
+    path = exe_path + '../../Settings/line_thickness.pkl'
+    if(os.path.isfile(path)):
+        with open(path, 'rb') as lt_load:
+            line_thickness = pickle.load(lt_load)
+
+    return line_thickness
+
+def save_find_shorthand_matches(find_shorthand_matches):
+    path = exe_path + '../../Settings/find_shorthand_matches.pkl'
+    pickle.dump(find_shorthand_matches, open(path, 'wb'))
+
+def load_find_shorthand_matches():
+    find_shorthand_matches = 0
+    path = exe_path + '../../Settings/find_shorthand_matches.pkl'
+    if(os.path.isfile(path)):
+        with open(path, 'rb') as fsm_load:
+            find_shorthand_matches = pickle.load(fsm_load)
+
+    return find_shorthand_matches
+
 def load_LabelBinarizer():
     LB = LabelBinarizer()
     path = exe_path + '../../LabelBinarizer/LabelBinarizer.pkl'

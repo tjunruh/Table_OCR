@@ -24,13 +24,13 @@ def sort_contours(cnts, method="left-to-right"):
 
     return (cnts, boundingBoxes)
 
-def get_letters(img):
+def get_letters(img, line_thickness):
     global model, LB, error
     letters = []
     image = cv2.imread(img)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     ret,thresh1 = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
-    dilated = cv2.dilate(thresh1, None, iterations=3)
+    dilated = cv2.dilate(thresh1, None, iterations=line_thickness)
 
     cnts = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
@@ -64,7 +64,7 @@ def get_word(letters):
             word += letter
     return word
 
-def get_predictions(root, pb, messagebox):
+def get_predictions(root, pb, messagebox, line_thickness, find_shorthand_matches):
     global model, LB, error
     error = False
     LB = fm.load_LabelBinarizer()
@@ -74,14 +74,32 @@ def get_predictions(root, pb, messagebox):
     cells = fm.get_storage()
     job_length = len(cells)
     job_num = 0
+    default_word = ''
     for cell in cells:
-        letters = get_letters(cell)
+        if find_shorthand_matches == 1:
+            for boldness in range(2,5):
+                letters = get_letters(cell, boldness)
+                if error:
+                    break
+                word = get_word(letters)
+                if boldness == line_thickness:
+                    default_word = word
+                if sl.in_short(word):
+                    break
+                else:
+                    word = default_word 
+        else:
+            letters = get_letters(cell, line_thickness)
+            if error:
+                break
+            word = get_word(letters)
+
         if error:
             error = False
             predictions.clear()
             messagebox()
             break
-        word = get_word(letters)
+            
         predictions.append(word)
         pb['value'] = int((job_num / job_length) * 100)
         job_num += 1

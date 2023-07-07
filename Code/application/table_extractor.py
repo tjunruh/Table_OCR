@@ -83,7 +83,7 @@ def save_boxes(boxes, img):
         x, y, w, h = box
         box_expand = 2
         roi = img[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
-        filename = f'../../../../Storage/{num_boxes}.jpg'
+        filename = f'../../Storage/{num_boxes}.jpg'
         cv2.imwrite(filename, roi)
         num_boxes += 1
         

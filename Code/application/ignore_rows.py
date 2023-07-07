@@ -53,7 +53,7 @@ def close():
     root.grab_release()
     root.destroy()
 
-def save():
+def ok():
     global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
     global ignore, ignore_list
     ignore.clear()
@@ -61,6 +61,7 @@ def save():
         if(str(e1.get()).isnumeric() and str(e2.get()).isnumeric()):
             ignore.append([e1.get(), e2.get()])
     fm.save_ignore(ignore)
+    close()
 
     
 def run():
@@ -100,8 +101,8 @@ def run():
     tk.Label(title_frame, text="        Row        ", font=("Arial", 15)).grid(row=0, column=1, sticky='nsew')
     tk.Label(title_frame, text="     ", font=("Arial", 15)).grid(row=0, column=2, sticky='nsew')
     tk.Button(button_frame, text="Add Ignore Row Entry", font=("Arial", 15), command=create_entry).grid(row=0, column=0, pady=10, padx=10) 
-    tk.Button(button_frame2, text="        Save       ", font=("Arial", 15), command=save).grid(row=0, column=0, pady=10, padx=10)
-    tk.Button(button_frame2, text="        Exit       ", font=("Arial", 15), command=close).grid(row=0, column=1, pady=10, padx=10)
+    tk.Button(button_frame2, text="         OK        ", font=("Arial", 15), command=ok).grid(row=0, column=0, pady=10, padx=10)
+    tk.Button(button_frame2, text="       Cancel      ", font=("Arial", 15), command=close).grid(row=0, column=1, pady=10, padx=10)
     
     initialize()
 

@@ -128,9 +128,10 @@ def run():
 
     line_thickness = tk.StringVar(root, fm.load_line_thickness())
     ttk.Separator(line_thickness_frame, orient='horizontal').pack(fill='x')
-    values = {"Thin Line Thickness" : "2",
-              "Normal Line Thickness" : "3",
-              "Thick Line Thickness" : "4"}
+    tk.Label(line_thickness_frame, text="Handwriting Thickness", font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
+    values = {"Thin" : "2",
+              "Normal" : "3",
+              "Thick" : "4"}
 
     for text, value in values.items():
         tk.Radiobutton(line_thickness_frame, text=text, variable=line_thickness, value=value, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)

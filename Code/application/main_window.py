@@ -127,7 +127,7 @@ def run():
     tk.Spinbox(row_column_frame, from_=0, to=100, increment=1.0, textvariable=columns, font=("Arial", 15)).grid(row=1, column=1, pady=5, padx=15)
 
     line_thickness = tk.StringVar(root, fm.load_line_thickness())
-
+    ttk.Separator(line_thickness_frame, orient='horizontal').pack(fill='x')
     values = {"Thin Line Thickness" : "2",
               "Normal Line Thickness" : "3",
               "Thick Line Thickness" : "4"}
@@ -135,8 +135,11 @@ def run():
     for text, value in values.items():
         tk.Radiobutton(line_thickness_frame, text=text, variable=line_thickness, value=value, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
 
+    ttk.Separator(line_thickness_frame, orient='horizontal').pack(fill='x')
     find_shorthand_matches = tk.IntVar(root, fm.load_find_shorthand_matches())
     tk.Checkbutton(line_thickness_frame, text="Find shorthand matches", variable=find_shorthand_matches, onvalue=1, offvalue=0, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
+
+    ttk.Separator(line_thickness_frame, orient='horizontal').pack(fill='x')
         
     tk.Button(generate_frame, text="Generate Tables", font=("Arial", 15), command=generate_table).grid(row=0, column=0, pady=5, padx=5)
                          

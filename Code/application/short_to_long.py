@@ -30,3 +30,23 @@ class short_to_long:
             return True
         else:
             return False
+
+    def single_short_to_long(self, word):
+        shorthand = {}
+        shorthand = self.file_manager_operative.load_shorthand()
+        char_set = {}
+        string_set = {}
+        for key, value in shorthand.items():
+            if key.find('*') != -1:
+                char_set[key.replace('*', '')] = value
+            else:
+                string_set[key] = value
+
+        if word in string_set:
+            word = string_set[word]
+        for key, value in char_set.items():
+            if word.find(key) != -1:
+                word = word.replace(key, value)
+
+        return word
+        

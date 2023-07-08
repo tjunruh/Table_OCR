@@ -1,18 +1,24 @@
 import tkinter as tk
-import file_manager as fm
-import ignore_rows as ir
-import edit_shorthand as es
-import default_directory as dd
-import short_to_long as sl
-import table_display as td
-import table_extractor as te
-import predict as p
+from file_manager import file_manager
+from ignore_rows import ignore_rows
+from edit_shorthand import edit_shorthand
+from default_directory import default_directory
+from table_display import table_display
+from table_extractor import table_extractor
+from predict import predict
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter.messagebox import showinfo
 from tkinter import messagebox
 
 class main_window:
+    ignore_rows_window = ignore_rows()
+    edit_shorthand_window = edit_shorthand()
+    default_directory_window = default_directory()
+    extract_cells_operative = table_extractor()
+    table_display_window = table_display()
+    predict_operative = predict()
+    file_manager_operative = file_manager()
     __root = None
     __select_file_frame = None
     __display_file_frame = None
@@ -30,26 +36,26 @@ class main_window:
         
     def __close(self):
         self.__rows_columns.clear()
-        fm.save_line_thickness(self.__line_thickness.get())
-        fm.save_find_shorthand_matches(self.__find_shorthand_matches.get())
+        self.file_manager_operative.save_line_thickness(self.__line_thickness.get())
+        self.file_manager_operative.save_find_shorthand_matches(self.__find_shorthand_matches.get())
         if((str(self.__rows.get()).isnumeric()) and (str(self.__columns.get()).isnumeric())):
             self.__rows_columns.append(self.__rows.get())
             self.__rows_columns.append(self.__columns.get())
-            fm.save_rows_columns(self.__rows_columns)
+            self.file_manager_operative.save_rows_columns(self.__rows_columns)
         self.__root.destroy()
 
     def __chose_pdf(self):
-        self.__file_name = filedialog.askopenfilename(initialdir = fm.load_default_directory(), title = "Select a File")
+        self.__file_name = filedialog.askopenfilename(initialdir = self.file_manager_operative.load_default_directory(), title = "Select a File")
         self.__file_display.set(self.__file_name)
 
     def __run_edit_shorthand(self):
-        es.run()
+        self.edit_shorthand_window.run()
 
     def __run_ignore_rows(self):
-        ir.run()
+        self.ignore_rows_window.run()
 
     def __run_default_directory(self):
-        dd.run()
+        self.default_directory_window.run()
 
     def __predict_error(self):
         messagebox.showerror('Could not run predictions', '- Do you have rows and columns set correctly?\n- Are you ignoring all rows that need to be ignored?\n- Did you select a valid pdf?')
@@ -62,14 +68,14 @@ class main_window:
         self.__rows_columns.clear()
         self.__rows_columns.append(self.__rows.get())
         self.__rows_columns.append(self.__columns.get())
-        fm.save_rows_columns(self.__rows_columns)
+        self.file_manager_operative.save_rows_columns(self.__rows_columns)
         ignore = []
-        ignore = fm.load_ignore()
-        if te.extract_cells(self.__file_name, self.__extract_error) != -1:
-            predictions = p.get_predictions(self.__root, self.__pb, self.__predict_error, int(self.__line_thickness.get()), self.__find_shorthand_matches.get())
-            fm.clear_storage()
+        ignore = self.file_manager_operative.load_ignore()
+        if self.extract_cells_operative.extract_cells(self.__file_name, self.__extract_error) != -1:
+            predictions = self.predict_operative.get_predictions(self.__root, self.__pb, self.__predict_error, int(self.__line_thickness.get()), self.__find_shorthand_matches.get())
+            self.file_manager_operative.clear_storage()
             if predictions:
-                td.run(predictions, int(self.__columns.get()))
+                self.table_display_window.run(predictions, int(self.__columns.get()))
      
     def run(self):
         self.__file_name = ""
@@ -116,7 +122,7 @@ class main_window:
         self.__pb.grid(row=5, column=0, padx=10, pady=20)
 
         self.__rows_columns = []
-        self.__rows_columns = fm.load_rows_columns()
+        self.__rows_columns = self.file_manager_operative.load_rows_columns()
         self.__rows = tk.StringVar(self.__root)
         self.__columns = tk.StringVar(self.__root)
 
@@ -133,7 +139,7 @@ class main_window:
         tk.Spinbox(self.__row_column_frame, from_=1, to=100, increment=1.0, textvariable=self.__rows, font=("Arial", 15), state='readonly').grid(row=1, column=0, pady=5, padx=15)
         tk.Spinbox(self.__row_column_frame, from_=1, to=100, increment=1.0, textvariable=self.__columns, font=("Arial", 15), state='readonly').grid(row=1, column=1, pady=5, padx=15)
 
-        self.__line_thickness = tk.StringVar(self.__root, fm.load_line_thickness())
+        self.__line_thickness = tk.StringVar(self.__root, self.file_manager_operative.load_line_thickness())
         ttk.Separator(self.__line_thickness_frame, orient='horizontal').pack(fill='x')
         tk.Label(self.__line_thickness_frame, text="Handwriting Thickness", font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
         
@@ -145,7 +151,7 @@ class main_window:
             tk.Radiobutton(self.__line_thickness_frame, text=text, variable=self.__line_thickness, value=value, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
 
         ttk.Separator(self.__line_thickness_frame, orient='horizontal').pack(fill='x')
-        self.__find_shorthand_matches = tk.IntVar(self.__root, fm.load_find_shorthand_matches())
+        self.__find_shorthand_matches = tk.IntVar(self.__root, self.file_manager_operative.load_find_shorthand_matches())
         tk.Checkbutton(self.__line_thickness_frame, text="Find shorthand matches", variable=self.__find_shorthand_matches, onvalue=1, offvalue=0, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
 
         ttk.Separator(self.__line_thickness_frame, orient='horizontal').pack(fill='x')

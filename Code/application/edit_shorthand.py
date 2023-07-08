@@ -1,108 +1,106 @@
 import tkinter as tk
 from tkscrolledframe import ScrolledFrame
-import file_manager as fm
+from file_manager import file_manager
 
-global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-global rows, shorthand_list, shorthand
+class edit_shorthand:
+    file_manager_operative = file_manager()
+    __root = None
+    __title_frame = None
+    __button_frame = None
+    __scroll_frame = None
+    __edit_frame = None
+    __button_frame2 = None
+    __rows = None
+    __shorthand_list = None
+    __shorthand = None
 
-def delete_entry(entry1, entry2, button1):
-    global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-    global rows, shorthand_list
-    index = 0
-    for e1, e2, b1 in shorthand_list:
-        if ((e1 == entry1) and (e2 == entry2) and (b1 == button1)):
-            e1.destroy()
-            e2.destroy()
-            b1.destroy()
-            shorthand_list.pop(index)
-            rows -= 1
+    def __delete_entry(self, entry1, entry2, button1):
+        index = 0
+        for e1, e2, b1 in self.__shorthand_list:
+            if ((e1 == entry1) and (e2 == entry2) and (b1 == button1)):
+                e1.destroy()
+                e2.destroy()
+                b1.destroy()
+                self.__shorthand_list.pop(index)
+                self.__rows -= 1
 
-        index += 1
+            index += 1
 
-def create_entry():
-    global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-    global rows, shorthand_list
-    row = rows
-    entry1=tk.Entry(edit_frame, font=("Arial", 10), width=24)
-    entry2=tk.Entry(edit_frame, font=("Arial", 10), width=24)
-    button1=tk.Button(edit_frame, text="  X  ", font=("Arial", 10), command=lambda :delete_entry(entry1, entry2, button1))
-    shorthand_list.append([entry1, entry2, button1])
-    shorthand_list[row][0].grid(row=rows, column=0, sticky='nsew')
-    shorthand_list[row][1].grid(row=rows, column=1, sticky='nsew')
-    shorthand_list[row][2].grid(row=rows, column=2, sticky='nsew')
-    edit_frame.rowconfigure(rows, weight=1)
-    rows += 1
+    def __create_entry(self):
+        row = self.__rows
+        entry1=tk.Entry(self.__edit_frame, font=("Arial", 10), width=24)
+        entry2=tk.Entry(self.__edit_frame, font=("Arial", 10), width=24)
+        button1=tk.Button(self.__edit_frame, text="  X  ", font=("Arial", 10), command=lambda :self.__delete_entry(entry1, entry2, button1))
+        self.__shorthand_list.append([entry1, entry2, button1])
+        self.__shorthand_list[row][0].grid(row=self.__rows, column=0, sticky='nsew')
+        self.__shorthand_list[row][1].grid(row=self.__rows, column=1, sticky='nsew')
+        self.__shorthand_list[row][2].grid(row=self.__rows, column=2, sticky='nsew')
+        self.__edit_frame.rowconfigure(self.__rows, weight=1)
+        self.__rows += 1
 
-def initialize():
-    global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-    global rows, shorthand_list, shorthand
-    shorthand = {}
-    shorthand_list = []
-    rows = 0
-    shorthand = fm.load_shorthand()
-    for short, long in shorthand.items():
-        create_entry()
-        row = rows - 1
-        shorthand_list[row][0].insert(0,short)
-        shorthand_list[row][1].insert(0,long)
+    def __initialize(self):
+        self.__shorthand = {}
+        self.__shorthand_list = []
+        self.__rows = 0
+        self.__shorthand = self.file_manager_operative.load_shorthand()
+        for short, long in self.__shorthand.items():
+            self.__create_entry()
+            row = self.__rows - 1
+            self.__shorthand_list[row][0].insert(0,short)
+            self.__shorthand_list[row][1].insert(0,long)
 
-def close():
-    global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-    global shorthand, shorthand_list
-    root.grab_release()
-    root.destroy()
+    def __close(self):
+        self.__root.grab_release()
+        self.__root.destroy()
 
-def ok():
-    global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-    global shorthand, shorthand_list
-    shorthand.clear()
-    for e1, e2, b1 in shorthand_list:
-        if((e1.get() != "") and (e2.get() != "")):
-            shorthand[e1.get()] = e2.get()
-    fm.save_shorthand(shorthand)
-    close()
+    def __ok(self):
+        self.__shorthand.clear()
+        for e1, e2, b1 in self.__shorthand_list:
+            if((e1.get() != "") and (e2.get() != "")):
+                self.__shorthand[e1.get()] = e2.get()
+        self.file_manager_operative.save_shorthand(self.__shorthand)
+        self.__close()
 
-def run():
-    global root, title_frame, button_frame, scroll_frame, edit_frame, button_frame2
-    root = tk.Toplevel()
-    root.grab_set()
+    def run(self):
+        self.__root = tk.Toplevel()
+        self.__root.grab_set()
 
-    root.title("Edit Shorthand")
-    root.rowconfigure(4, weight=1)
-    root.columnconfigure(1, weight=1)
+        self.__root.title("Edit Shorthand")
+        self.__root.rowconfigure(4, weight=1)
+        self.__root.columnconfigure(1, weight=1)
 
-    title_frame = tk.Frame(root)
-    title_frame.rowconfigure(0, weight=1)
-    title_frame.columnconfigure(1, weight=1)
-    title_frame.grid(row=0, column=0, sticky='nsew')
+        self.__title_frame = tk.Frame(self.__root)
+        self.__title_frame.rowconfigure(0, weight=1)
+        self.__title_frame.columnconfigure(1, weight=1)
+        self.__title_frame.grid(row=0, column=0, sticky='nsew')
 
-    button_frame = tk.Frame(root)
-    button_frame.rowconfigure(0, weight=1)
-    button_frame.columnconfigure(0, weight=1)
-    button_frame.grid(row=2, column=0, sticky='nsew')
+        self.__button_frame = tk.Frame(self.__root)
+        self.__button_frame.rowconfigure(0, weight=1)
+        self.__button_frame.columnconfigure(0, weight=1)
+        self.__button_frame.grid(row=2, column=0, sticky='nsew')
 
-    button_frame2 = tk.Frame(root)
-    button_frame2.rowconfigure(0, weight=1)
-    button_frame2.columnconfigure(1, weight=1)
-    button_frame2.grid(row=3, column=0, sticky='nsew')
+        self.__button_frame2 = tk.Frame(self.__root)
+        self.__button_frame2.rowconfigure(0, weight=1)
+        self.__button_frame2.columnconfigure(1, weight=1)
+        self.__button_frame2.grid(row=3, column=0, sticky='nsew')
 
-    scroll_frame = ScrolledFrame(root)
-    scroll_frame.grid(row=1, column=0, sticky='nsew')
-    scroll_frame.bind_arrow_keys(root)
-    scroll_frame.bind_scroll_wheel(root)
-    edit_frame = scroll_frame.display_widget(tk.Frame)
-    edit_frame.rowconfigure(1, weight=1)
-    edit_frame.columnconfigure(3, weight=1)
+        self.__scroll_frame = ScrolledFrame(self.__root)
+        self.__scroll_frame.grid(row=1, column=0, sticky='nsew')
+        self.__scroll_frame.bind_arrow_keys(self.__root)
+        self.__scroll_frame.bind_scroll_wheel(self.__root)
+        self.__edit_frame = self.__scroll_frame.display_widget(tk.Frame)
+        self.__edit_frame.rowconfigure(1, weight=1)
+        self.__edit_frame.columnconfigure(3, weight=1)
 
-    tk.Label(title_frame, text="     Shorthand     ", font=("Arial", 15)).grid(row=0, column=0, sticky='nsew')
-    tk.Label(title_frame, text="    Expands To     ", font=("Arial", 15)).grid(row=0, column=1, sticky='nsew')
-    tk.Label(title_frame, text="     ", font=("Arial", 15)).grid(row=0, column=2, sticky='nsew')
-    tk.Button(button_frame, text="Add Shorthand Entry", font=("Arial", 15), command=create_entry).grid(row=0, column=0, pady=10, padx=10)
-    tk.Button(button_frame2, text="        OK         ", font=("Arial", 15), command=ok).grid(row=0, column=0, pady=10, padx=10)
-    tk.Button(button_frame2, text="      Cancel       ", font=("Arial", 15), command=close).grid(row=0, column=1, pady=10, padx=10)
+        tk.Label(self.__title_frame, text="     Shorthand     ", font=("Arial", 15)).grid(row=0, column=0, sticky='nsew')
+        tk.Label(self.__title_frame, text="    Expands To     ", font=("Arial", 15)).grid(row=0, column=1, sticky='nsew')
+        tk.Label(self.__title_frame, text="     ", font=("Arial", 15)).grid(row=0, column=2, sticky='nsew')
+        tk.Button(self.__button_frame, text="Add Shorthand Entry", font=("Arial", 15), command=self.__create_entry).grid(row=0, column=0, pady=10, padx=10)
+        tk.Button(self.__button_frame2, text="        OK         ", font=("Arial", 15), command=self.__ok).grid(row=0, column=0, pady=10, padx=10)
+        tk.Button(self.__button_frame2, text="      Cancel       ", font=("Arial", 15), command=self.__close).grid(row=0, column=1, pady=10, padx=10)
 
-    initialize()
+        self.__initialize()
 
-    root.protocol("WM_DELETE_WINDOW", close)
-    root.mainloop()
+        self.__root.protocol("WM_DELETE_WINDOW", self.__close)
+        self.__root.mainloop()
 

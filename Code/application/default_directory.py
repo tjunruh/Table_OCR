@@ -14,10 +14,11 @@ class default_directory:
         self.__root.grab_release()
         self.__root.destroy()
 
-    def __save(self):
+    def __ok(self):
         if ((os.path.isdir(self.__entry.get())) and (self.__entry.get() != '')):
             default_directory = self.__entry.get()
             self.file_manager_operative.save_default_directory(default_directory)
+            self.__close()
         else:
             messagebox.showerror('Error', 'Not a directory')
 
@@ -42,8 +43,8 @@ class default_directory:
         self.__entry = tk.Entry(self.__entry_frame, font=("Arial", 10), width=48)
         self.__entry.grid(row=0, column=0, pady=10, padx=10)
         self.__entry.insert(0, self.file_manager_operative.load_default_directory())
-        tk.Button(self.__button_frame, text="       Save        ", font=("Arial", 15), command=self.__save).grid(row=0, column=0, padx=10, pady=10)
-        tk.Button(self.__button_frame, text="       Exit        ", font=("Arial", 15), command=self.__close).grid(row=0, column=1, padx=10, pady=10)
+        tk.Button(self.__button_frame, text="        OK         ", font=("Arial", 15), command=self.__ok).grid(row=0, column=0, padx=10, pady=10)
+        tk.Button(self.__button_frame, text="      Cancel       ", font=("Arial", 15), command=self.__close).grid(row=0, column=1, padx=10, pady=10)
 
         self.__root.protocol("WM_DELETE_WINDOW", self.__close)
         self.__root.mainloop()

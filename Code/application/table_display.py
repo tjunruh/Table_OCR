@@ -22,6 +22,7 @@ class table_display:
     def run(self, predictions, columns):
         rows = int(len(predictions)/columns)
         self.__root = tk.Tk()
+        self.__root.geometry("1300x700")
         self.__root.grid_columnconfigure(0, weight = 1)
         self.__root.grid_rowconfigure(0, weight = 1)
         self.__frame = tk.Frame(self.__root)

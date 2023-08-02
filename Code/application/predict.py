@@ -1,11 +1,12 @@
-import tensorflow as tf
 import cv2
 from file_manager import file_manager
-from sklearn.preprocessing import LabelBinarizer
 import imutils
 import numpy as np
 from short_to_long import short_to_long
 import time
+import json
+import requests
+import os
 
 class predict:
     file_manager_operative = file_manager()
@@ -13,9 +14,6 @@ class predict:
     __model = None
     __LB = None
     __error = None
-
-    def __hex_to_char(self, hex_input):
-        return(chr(int(hex_input[0], 16)))
 
     def __sort_contours(self, cnts, method="left-to-right"):
         reverse = False
@@ -30,6 +28,11 @@ class predict:
         return (cnts, boundingBoxes)
 
     def __get_letters(self, img, line_thickness):
+        class_names = ['0', '1', '2', '3', '4', '5', '6',
+                       '7', '8', '9', 'A', 'B', 'C', 'D',
+                       'E', 'F', 'G', 'H', 'I', 'J', 'K',
+                       'L', 'M', 'N', 'P', 'Q', 'R', 'S',
+                       'T', 'U', 'V', 'W', 'X', 'Y']
         letters = []
         image = cv2.imread(img)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -53,10 +56,12 @@ class predict:
                         thresh = thresh.astype("float32") / 255.0
                         thresh = np.expand_dims(thresh, axis=-1)
                         thresh = thresh.reshape(1,32,32,1)
-                        ypred = self.__model.predict(thresh, verbose=0)
-                        ypred = self.__LB.inverse_transform(ypred)
-                        [x] = self.__hex_to_char(ypred)
-                        letters.append(x)
+                        data = json.dumps({"signature_name": "serving_default", "instances": thresh.tolist()})
+                        headers = {"content-type": "application/json"}
+                        json_response = requests.post('http://localhost:8501/v1/models/Table_OCR_model:predict', data=data, headers=headers)
+                        ypred = json.loads(json_response.text)['predictions']
+                        ypred = class_names[np.argmax(ypred[0])]
+                        letters.append(ypred)
                     except:
                         self.__error = True
             return letters
@@ -71,8 +76,6 @@ class predict:
     def get_predictions(self, root, pb, messagebox, line_thickness, find_shorthand_matches):
         global model, LB, error
         self.__error = False
-        self.__LB = self.file_manager_operative.load_LabelBinarizer()
-        self.__model = self.file_manager_operative.load_ocr_model()
         predictions = []
         self.file_manager_operative.delete_ignored_rows()
         cells = self.file_manager_operative.get_storage()

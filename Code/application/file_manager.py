@@ -1,8 +1,6 @@
 import pickle
-from sklearn.preprocessing import LabelBinarizer
 import os
 import shutil
-from tensorflow.keras.models import load_model
 
 class file_manager:
     __exe_path = ''
@@ -84,19 +82,6 @@ class file_manager:
                 find_shorthand_matches = pickle.load(fsm_load)
 
         return find_shorthand_matches
-
-    def load_LabelBinarizer(self):
-        LB = LabelBinarizer()
-        path = self.__exe_path + '../../LabelBinarizer/LabelBinarizer.pkl'
-        with open(path, 'rb') as LB_config:
-            LB = pickle.load(LB_config)
-
-        return LB
-
-    def load_ocr_model(self):
-        path = self.__exe_path + "../../Model"
-        model = load_model(path)
-        return model
 
     def clear_storage(self):
         folder = self.__exe_path + '../../Storage'

@@ -10,6 +10,9 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter.messagebox import showinfo
 from tkinter import messagebox
+import subprocess
+from multiprocessing import Process, freeze_support
+import os
 
 class main_window:
     ignore_rows_window = ignore_rows()
@@ -33,6 +36,27 @@ class main_window:
     __line_thickness = None
     __find_shorthand_matches = None
     __rows_columns = None
+
+    def serve_model(self):
+        path = os.path.abspath("../../Model")
+        drive = path.split(':', 1)[0]
+        path = path.split(':', 1)[1]
+        path = '/mnt/' + drive.lower() + path.replace('\\', '/')
+        powerShellPath = r'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
+        p = subprocess.Popen([powerShellPath, '-ExecutionPolicy', 'Unrestricted', 'wsl', 'tensorflow_model_server', '--rest_api_port=8501', '--model_name=Table_OCR_model', '--model_base_path=%s' % path, '>server.log 2>&1' ], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = p.communicate()
+        rc = p.returncode
+
+    def tear_down_model(self):
+        powerShellPath = r'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
+        p = subprocess.Popen([powerShellPath, '-ExecutionPolicy', 'Unrestricted', 'wsl', 'pidof', 'tensorflow_model_server'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = p.communicate()
+        pid = output.decode()
+        rc = p.returncode
+        p = subprocess.Popen([powerShellPath, '-ExecutionPolicy', 'Unrestricted', 'wsl', 'kill', '-9', '%s' % pid], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = p.communicate()
+        rc = p.returncode
+        
         
     def __close(self):
         self.__rows_columns.clear()
@@ -42,6 +66,7 @@ class main_window:
             self.__rows_columns.append(self.__rows.get())
             self.__rows_columns.append(self.__columns.get())
             self.file_manager_operative.save_rows_columns(self.__rows_columns)
+        self.tear_down_model()
         self.__root.destroy()
 
     def __chose_pdf(self):
@@ -78,6 +103,9 @@ class main_window:
                 self.table_display_window.run(predictions, int(self.__columns.get()))
      
     def run(self):
+        p = Process(target=self.serve_model)
+        p.start()
+        
         self.__file_name = ""
         self.__root = tk.Tk()
 
@@ -162,5 +190,6 @@ class main_window:
         self.__root.mainloop()
 
 if __name__ == "__main__":
+    freeze_support()
     Table_OCR = main_window()
     Table_OCR.run()

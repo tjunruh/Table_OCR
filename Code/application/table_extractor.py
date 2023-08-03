@@ -12,7 +12,7 @@ class table_extractor:
         global error
         self.__error = False
         try:
-            jpgs = convert_from_path(file_path)
+            jpgs = convert_from_path(file_path, poppler_path='../../Release-23.07.0-0/poppler-23.07.0/Library/bin')
 
             for page in range(len(jpgs)):
                 jpgs[page].save('page' + str(page) + '.jpg', 'JPEG')

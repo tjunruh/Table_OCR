@@ -57,10 +57,10 @@ class main_window:
     def __run_default_directory(self):
         self.default_directory_window.run()
 
-    def __predict_error(self):
-        messagebox.showerror('Could not run predictions', '- Do you have rows and columns set correctly?\n- Are you ignoring all rows that need to be ignored?\n- Did you select a valid pdf?')
+    def __number_of_cells_error(self):
+        messagebox.showerror('Incorrect number of cells', 'Make sure number of rows and columns are set correctly')
 
-    def __extract_error(self):
+    def __convert_pdf_error(self):
         messagebox.showerror('Could not extract cells', 'You must select a PDF file')
 
     def __generate_table(self):
@@ -71,8 +71,8 @@ class main_window:
         self.file_manager_operative.save_rows_columns(self.__rows_columns)
         ignore = []
         ignore = self.file_manager_operative.load_ignore()
-        if self.extract_cells_operative.extract_cells(self.__file_name, self.__extract_error) != -1:
-            predictions = self.predict_operative.get_predictions(self.__root, self.__pb, self.__predict_error, int(self.__line_thickness.get()), self.__find_shorthand_matches.get())
+        if self.extract_cells_operative.extract_cells(self.__file_name, self.__convert_pdf_error, self.__number_of_cells_error) != -1:
+            predictions = self.predict_operative.get_predictions(self.__root, self.__pb, int(self.__line_thickness.get()), self.__find_shorthand_matches.get())
             self.file_manager_operative.clear_storage()
             if predictions:
                 self.table_display_window.run(predictions, int(self.__columns.get()))

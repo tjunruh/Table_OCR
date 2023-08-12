@@ -12,7 +12,6 @@ class predict:
     short_to_long_operative = short_to_long()
     __model = None
     __LB = None
-    __error = None
 
     def __hex_to_char(self, hex_input):
         return(chr(int(hex_input[0], 16)))
@@ -58,7 +57,7 @@ class predict:
                         [x] = self.__hex_to_char(ypred)
                         letters.append(x)
                     except:
-                        self.__error = True
+                        return " >>> Unreadable <<< "
             return letters
 
     def __get_word(self, letters):
@@ -68,9 +67,7 @@ class predict:
                 word += letter
         return word
 
-    def get_predictions(self, root, pb, messagebox, line_thickness, find_shorthand_matches):
-        global model, LB, error
-        self.__error = False
+    def get_predictions(self, root, pb, line_thickness, find_shorthand_matches):
         self.__LB = self.file_manager_operative.load_LabelBinarizer()
         self.__model = self.file_manager_operative.load_ocr_model()
         predictions = []
@@ -83,11 +80,10 @@ class predict:
             if find_shorthand_matches == 1:
                 for boldness in range(2,5):
                     letters = self.__get_letters(cell, boldness)
-                    if self.__error:
-                        break
                     word = self.__get_word(letters)
                     if boldness == line_thickness:
                         default_word = word
+                        
                     if self.short_to_long_operative.in_short(word):
                         break
                     else:
@@ -95,12 +91,6 @@ class predict:
             else:
                 letters = self.__get_letters(cell, line_thickness)
                 word = self.__get_word(letters)
-
-            if self.__error:
-                self.__error = False
-                predictions.clear()
-                messagebox()
-                break
             
             predictions.append(word)
             pb['value'] = int((job_num / job_length) * 100)

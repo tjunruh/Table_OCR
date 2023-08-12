@@ -22,7 +22,7 @@ class table_display:
     def run(self, predictions, columns):
         rows = int(len(predictions)/columns)
         self.__root = tk.Tk()
-        self.__root.geometry("1300x700")
+        self.__root.geometry("1400x700")
         self.__root.grid_columnconfigure(0, weight = 1)
         self.__root.grid_rowconfigure(0, weight = 1)
         self.__frame = tk.Frame(self.__root)
@@ -30,6 +30,7 @@ class table_display:
         self.__frame.grid_rowconfigure(0, weight = 1)
         self.__cells = [[predictions[c + (r * columns)] for c in range(columns)] for r in range(rows)]
         self.__sheet = Sheet(self.__frame, data=self.__cells)
+        self.__sheet.set_all_column_widths(130)
         self.__sheet.enable_bindings()
         self.__sheet.font(newfont = ("century Gothic", 9, "normal"))
         self.__frame.grid(row=0, column=0, sticky="nsew")

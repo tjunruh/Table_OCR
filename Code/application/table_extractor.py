@@ -6,11 +6,11 @@ from file_manager import file_manager
 class table_extractor:
     file_manager_operative = file_manager()
     __num_boxes = None
-    __error = None
+    __convert_pdf_error = None
+    __number_of_cells_error = None
 
     def __pdf_to_jpg(self, file_path):
-        global error
-        self.__error = False
+        self.__convert_pdf_error = False
         try:
             jpgs = convert_from_path(file_path, poppler_path='../../Release-23.07.0-0/poppler-23.07.0/Library/bin')
 
@@ -19,7 +19,7 @@ class table_extractor:
 
             return jpgs
         except:
-            self.__error = True
+            self.__convert_pdf_error = True
             return None
     
 
@@ -61,13 +61,17 @@ class table_extractor:
         contours = cv2.findContours(vertical_horizontal_lines, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
         for contour in contours:
             boundingBox = cv2.boundingRect(contour)
-            if ((boundingBox[2]<1000) and (boundingBox[3]<500)):
+            if ((boundingBox[2]<1000) and (boundingBox[3]<500) and (boundingBox[2]>25) and (boundingBox[3]>25)):
                 boundingBoxes.append(boundingBox)
         return boundingBoxes
 
     def __sort_boundingBoxes(self, boundingBoxes):
+        self.__number_of_cells_error = False
         rows_columns = []
         rows_columns = self.file_manager_operative.load_rows_columns()
+        if(int(rows_columns[0])*int(rows_columns[1]) != int(len(boundingBoxes))):
+           self.__number_of_cells_error = True
+           return None
         columns = int(rows_columns[1])
         rows = int(len(boundingBoxes) / int(columns))
         boundingBoxes = sorted(boundingBoxes, key=lambda x:x[1])
@@ -88,10 +92,10 @@ class table_extractor:
             cv2.imwrite(filename, roi)
             self.__num_boxes += 1
         
-    def extract_cells(self, file_path, messagebox):
+    def extract_cells(self, file_path, messagebox_pdf_error, messagebox_number_of_cells_error):
         self.__num_boxes = 0
         jpgs = self.__pdf_to_jpg(file_path)
-        if not self.__error:
+        if not self.__convert_pdf_error:
             imgs = self.__rotate_jpgs(jpgs)
             for img in imgs:
                 img_bin_otsu = self.__prepare_binary_image(img)
@@ -100,9 +104,12 @@ class table_extractor:
                 vertical_horizontal_lines = self.__get_vertical_horizontal_lines(vertical_lines, horizontal_lines)
                 boundingBoxes = self.__get_boundingBoxes(vertical_horizontal_lines)
                 boxes = self.__sort_boundingBoxes(boundingBoxes)
+                if(self.__number_of_cells_error):
+                   messagebox_number_of_cells_error()
+                   return -1
                 self.__save_boxes(boxes, img)
             return 0
         else:
-            messagebox()
+            messagebox_pdf_error()
             return -1
         

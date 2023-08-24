@@ -85,6 +85,56 @@ class file_manager:
 
         return find_shorthand_matches
 
+    def save_batch(self, batch, batch_num):
+        path = self.__exe_path + "../../batches/batch_" + str(batch_num)
+        pickle.dump(batch, open(path, 'wb'))
+
+    def load_batch(self, batch_num):
+        batch = []
+        path = self.__exe_path + "../../batches/batch_" + str(batch_num)
+        if(os.path.isfile(path)):
+            with open(path, 'rb') as batch_load:
+                batch = pickle.load(batch_load)
+
+        return batch
+
+    def clear_batches(self):
+        folder = self.__exe_path + '../../batches'
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+    def save_prediction_results(self, predictions, result_num):
+        path = self.__exe_path + "../../predictions/predictions_" + str(result_num)
+        pickle.dump(predictions, open(path, 'wb'))
+
+    def load_prediction_results(self, result_num):
+        predictions = []
+        path = self.__exe_path + "../../predictions/predictions_" + str(result_num)
+        if(os.path.isfile(path)):
+            with open(path, 'rb') as result_load:
+                predictions = pickle.load(result_load)
+
+        return predictions
+
+    def clear_results(self):
+        folder = self.__exe_path + '../../predictions'
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
     def load_LabelBinarizer(self):
         LB = LabelBinarizer()
         path = self.__exe_path + '../../LabelBinarizer/LabelBinarizer.pkl'
@@ -154,5 +204,6 @@ class file_manager:
 
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
+        
             
         

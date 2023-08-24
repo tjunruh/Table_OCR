@@ -6,6 +6,7 @@ import imutils
 import numpy as np
 from short_to_long import short_to_long
 import time
+from multiprocessing import Pool, cpu_count, Value
 
 class predict:
     file_manager_operative = file_manager()
@@ -67,14 +68,11 @@ class predict:
                 word += letter
         return word
 
-    def get_predictions(self, root, pb, line_thickness, find_shorthand_matches):
+    def get_predictions(self, cells, line_thickness, find_shorthand_matches):
+        global m_job_num
         self.__LB = self.file_manager_operative.load_LabelBinarizer()
         self.__model = self.file_manager_operative.load_ocr_model()
         predictions = []
-        self.file_manager_operative.delete_ignored_rows()
-        cells = self.file_manager_operative.get_storage()
-        job_length = len(cells)
-        job_num = 0
         default_word = ''
         for cell in cells:
             if find_shorthand_matches == 1:
@@ -93,15 +91,38 @@ class predict:
                 word = self.__get_word(letters)
             
             predictions.append(word)
-            pb['value'] = int((job_num / job_length) * 100)
-            job_num += 1
-            root.update_idletasks()
-        pb['value'] = 100
-        root.update_idletasks()
-        time.sleep(1)
-        pb['value'] = 0
-        root.update_idletasks()
+            m_job_num.value += 1
 
         predictions = self.short_to_long_operative.short_to_long(predictions)
-
         return predictions
+
+    def run_batch_predictions(self, batch_num):
+        cells = self.file_manager_operative.load_batch(batch_num)
+        line_thickness = self.file_manager_operative.load_line_thickness()
+        find_shorthand_matches = self.file_manager_operative.load_find_shorthand_matches()
+        predictions = self.get_predictions(cells, int(line_thickness), int(find_shorthand_matches))
+        self.file_manager_operative.save_prediction_results(predictions, batch_num)
+
+    def init_workers(self, job_num):
+        global m_job_num
+        m_job_num = job_num
+
+    def update_progress_bar(self, job_num, job_len, pb, root):
+        while(job_num.value < (job_len - 1)):
+            pb['value'] = int((job_num.value / job_len) * 100)
+            root.update_idletasks()
+            time.sleep(0.25)
+        pb['value'] = 100
+        time.sleep(0.25)
+        pb['value'] = 0
+
+    def run_predictions(self, cells_len, pb, root):
+        __name__ = '__main__'
+        if __name__ == '__main__':
+            job_num = Value('i', 0)
+            cpu_num = int(cpu_count()/2)
+            p1 = Pool(cpu_num, initializer=self.init_workers, initargs=(job_num,))
+            p1.map_async(self.run_batch_predictions, range(1, cpu_num+1))
+            p1.close()
+            self.update_progress_bar(job_num, cells_len, pb, root)
+        

@@ -69,9 +69,6 @@ class table_extractor:
         self.__number_of_cells_error = False
         rows_columns = []
         rows_columns = self.file_manager_operative.load_rows_columns()
-        if(int(rows_columns[0])*int(rows_columns[1]) != int(len(boundingBoxes))):
-           self.__number_of_cells_error = True
-           return None
         columns = int(rows_columns[1])
         rows = int(len(boundingBoxes) / int(columns))
         boundingBoxes = sorted(boundingBoxes, key=lambda x:x[1])
@@ -92,7 +89,7 @@ class table_extractor:
             cv2.imwrite(filename, roi)
             self.__num_boxes += 1
         
-    def extract_cells(self, file_path, messagebox_pdf_error, messagebox_number_of_cells_error):
+    def extract_cells(self, file_path, messagebox_pdf_error):
         self.__num_boxes = 0
         jpgs = self.__pdf_to_jpg(file_path)
         if not self.__convert_pdf_error:
@@ -104,9 +101,6 @@ class table_extractor:
                 vertical_horizontal_lines = self.__get_vertical_horizontal_lines(vertical_lines, horizontal_lines)
                 boundingBoxes = self.__get_boundingBoxes(vertical_horizontal_lines)
                 boxes = self.__sort_boundingBoxes(boundingBoxes)
-                if(self.__number_of_cells_error):
-                   messagebox_number_of_cells_error()
-                   return -1
                 self.__save_boxes(boxes, img)
             return 0
         else:

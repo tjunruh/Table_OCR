@@ -43,7 +43,7 @@ class predict:
 
             box_expand = 2
             for c in cnts:
-                if cv2.contourArea(c) > 125:
+                if cv2.contourArea(c) > 275:
                     (x, y, w, h) = cv2.boundingRect(c)
                     cv2.rectangle(image, (x,y), (x+w,y+h), (0,255,0), 2)
                     roi = gray[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]

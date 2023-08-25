@@ -86,12 +86,12 @@ class file_manager:
         return find_shorthand_matches
 
     def save_batch(self, batch, batch_num):
-        path = self.__exe_path + "../../batches/batch_" + str(batch_num)
+        path = self.__exe_path + "../../Batches/batch_" + str(batch_num)
         pickle.dump(batch, open(path, 'wb'))
 
     def load_batch(self, batch_num):
         batch = []
-        path = self.__exe_path + "../../batches/batch_" + str(batch_num)
+        path = self.__exe_path + "../../Batches/batch_" + str(batch_num)
         if(os.path.isfile(path)):
             with open(path, 'rb') as batch_load:
                 batch = pickle.load(batch_load)
@@ -99,7 +99,7 @@ class file_manager:
         return batch
 
     def clear_batches(self):
-        folder = self.__exe_path + '../../batches'
+        folder = self.__exe_path + '../../Batches'
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
@@ -111,12 +111,12 @@ class file_manager:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
 
     def save_prediction_results(self, predictions, result_num):
-        path = self.__exe_path + "../../predictions/predictions_" + str(result_num)
+        path = self.__exe_path + "../../Predictions/predictions_" + str(result_num)
         pickle.dump(predictions, open(path, 'wb'))
 
     def load_prediction_results(self, result_num):
         predictions = []
-        path = self.__exe_path + "../../predictions/predictions_" + str(result_num)
+        path = self.__exe_path + "../../Predictions/predictions_" + str(result_num)
         if(os.path.isfile(path)):
             with open(path, 'rb') as result_load:
                 predictions = pickle.load(result_load)
@@ -124,7 +124,7 @@ class file_manager:
         return predictions
 
     def clear_results(self):
-        folder = self.__exe_path + '../../predictions'
+        folder = self.__exe_path + '../../Predictions'
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:

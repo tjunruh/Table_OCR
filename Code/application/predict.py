@@ -125,4 +125,5 @@ class predict:
             p1.map_async(self.run_batch_predictions, range(1, cpu_num+1))
             p1.close()
             self.update_progress_bar(job_num, cells_len, pb, root)
+            p1.join()
         

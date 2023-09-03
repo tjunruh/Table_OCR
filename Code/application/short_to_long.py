@@ -16,6 +16,19 @@ class short_to_long:
                 string_set[key] = value
 
         for i in range(len(predictions)):
+            if self.number_of_digits(predictions[i]) > 1:
+                if predictions[i].find('I') != -1:
+                    predictions[i] = predictions[i].replace('I', '1')
+
+                if predictions[i].find('S') != -1:
+                    predictions[i] = predictions[i].replace('S', '5')
+
+                if predictions[i].find('D') != -1:
+                    predictions[i] = predictions[i].replace('D', '0')
+                    
+            elif self.number_of_letters(predictions[i]) > 1:
+                predictions[i] = predictions[i].replace('5', 'S')
+                
             if predictions[i] in string_set:
                 predictions[i] = string_set[predictions[i]]
                         
@@ -62,6 +75,20 @@ class short_to_long:
                 word = word.replace(key, value)
 
         return word
-        
-    
+
+    def number_of_digits(self, word):
+        digits = 0
+        for character in word:
+            if character.isdigit():
+                digits += 1
+                
+        return digits
+
+    def number_of_letters(self, word):
+        letters = 0
+        for character in word:
+            if not character.isdigit():
+                letters += 1
+
+        return letters
         

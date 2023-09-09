@@ -58,7 +58,8 @@ class predict:
                         [x] = self.__hex_to_char(ypred)
                         letters.append(x)
                     except:
-                        return " >>> Unreadable <<< "
+                        pass
+                    
             return letters
 
     def __get_word(self, letters):

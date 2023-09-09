@@ -38,13 +38,13 @@ class table_extractor:
         return img_bin_otsu
 
     def __get_vertical_lines(self, img_bin_otsu, img):
-        vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, np.array(img).shape[1]//100))
+        vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, np.array(img).shape[1]//225))
         vertical_lines = cv2.erode(img_bin_otsu, vertical_kernel, iterations=3)
         vertical_lines = cv2.dilate(vertical_lines, vertical_kernel, iterations=3)
         return vertical_lines
 
     def __get_horizontal_lines(self, img_bin_otsu, img):
-        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (np.array(img).shape[1]//100, 1))
+        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (np.array(img).shape[1]//225, 1))
         horizontal_lines = cv2.erode(img_bin_otsu, horizontal_kernel, iterations=5)
         horizontal_lines = cv2.dilate(horizontal_lines, horizontal_kernel, iterations=5)
         return horizontal_lines

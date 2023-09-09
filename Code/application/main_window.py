@@ -72,6 +72,7 @@ class main_window:
         self.file_manager_operative.save_find_shorthand_matches(self.__find_shorthand_matches.get())
         ignore = []
         ignore = self.file_manager_operative.load_ignore()
+        self.file_manager_operative.clear_storage()
         if self.extract_cells_operative.extract_cells(self.__file_name, self.__convert_pdf_error) != -1:
             cpu_num = int(cpu_count()/2)
             self.file_manager_operative.delete_ignored_rows()
@@ -83,7 +84,6 @@ class main_window:
                 batch = cells[i:i+chunk]
                 self.file_manager_operative.save_batch(batch, batch_num)
             self.predict_operative.run_predictions(len(cells), self.pb, self.root) 
-            self.file_manager_operative.clear_storage()
             predictions = []
             for i in range(1, cpu_num+1):
                 predictions += self.file_manager_operative.load_prediction_results(i)

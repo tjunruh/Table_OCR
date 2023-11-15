@@ -69,7 +69,7 @@ class predict:
                 word += letter
         return word
 
-    def get_predictions(self, cells, line_thickness, find_shorthand_matches):
+    def get_predictions(self, cells, line_thickness, find_shorthand_matches, multiprocessing):
         global m_job_num
         self.__LB = self.file_manager_operative.load_LabelBinarizer()
         self.__model = self.file_manager_operative.load_ocr_model()
@@ -92,7 +92,8 @@ class predict:
                 word = self.__get_word(letters)
             
             predictions.append(word)
-            m_job_num.value += 1
+            if multiprocessing:
+                m_job_num.value += 1
 
         predictions = self.short_to_long_operative.short_to_long(predictions)
         return predictions
@@ -101,7 +102,7 @@ class predict:
         cells = self.file_manager_operative.load_batch(batch_num)
         line_thickness = self.file_manager_operative.load_line_thickness()
         find_shorthand_matches = self.file_manager_operative.load_find_shorthand_matches()
-        predictions = self.get_predictions(cells, int(line_thickness), int(find_shorthand_matches))
+        predictions = self.get_predictions(cells, int(line_thickness), int(find_shorthand_matches), True)
         self.file_manager_operative.save_prediction_results(predictions, batch_num)
 
     def init_workers(self, job_num):

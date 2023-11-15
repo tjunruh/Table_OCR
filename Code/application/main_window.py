@@ -36,6 +36,7 @@ class main_window:
     __line_thickness = None
     __find_shorthand_matches = None
     __rows_columns = None
+    __multiprocessing = True
         
     def __close(self):
         self.__rows_columns.clear()
@@ -74,21 +75,27 @@ class main_window:
         ignore = self.file_manager_operative.load_ignore()
         self.file_manager_operative.clear_storage()
         if self.extract_cells_operative.extract_cells(self.__file_name, self.__convert_pdf_error) != -1:
-            cpu_num = int(cpu_count()/2)
             self.file_manager_operative.delete_ignored_rows()
             cells = self.file_manager_operative.get_storage()
-            chunk = math.ceil(len(cells)/cpu_num)
-            batch_num = 0
-            for i in range(0, len(cells), chunk):
-                batch_num += 1
-                batch = cells[i:i+chunk]
-                self.file_manager_operative.save_batch(batch, batch_num)
-            self.predict_operative.run_predictions(len(cells), self.pb, self.root) 
-            predictions = []
-            for i in range(1, cpu_num+1):
-                predictions += self.file_manager_operative.load_prediction_results(i)
-            self.file_manager_operative.clear_batches()
-            self.file_manager_operative.clear_results()
+            if self.__multiprocessing:
+                cpu_num = int(cpu_count()/2)
+                chunk = math.ceil(len(cells)/cpu_num)
+                batch_num = 0
+                for i in range(0, len(cells), chunk):
+                    batch_num += 1
+                    batch = cells[i:i+chunk]
+                    self.file_manager_operative.save_batch(batch, batch_num)
+                self.predict_operative.run_predictions(len(cells), self.pb, self.root) 
+                predictions = []
+                for i in range(1, cpu_num+1):
+                    predictions += self.file_manager_operative.load_prediction_results(i)
+                self.file_manager_operative.clear_batches()
+                self.file_manager_operative.clear_results()
+            else:
+                line_thickness = self.file_manager_operative.load_line_thickness()
+                find_shorthand_matches = self.file_manager_operative.load_find_shorthand_matches()
+                predictions = self.predict_operative.get_predictions(cells, int(line_thickness), int(find_shorthand_matches), False)
+                
             if predictions:
                 self.table_display_window.run(predictions, int(self.__columns.get()))
      

@@ -6,6 +6,7 @@ dependencies:
   - black
   - poppler
   - platfirmdirs
+  - tabulate
   - pip:
     - imutils==0.5.4
     - numpy==1.21.6

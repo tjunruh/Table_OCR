@@ -5,7 +5,7 @@ dependencies:
   - python[version='<3.11']
   - black
   - poppler
-  - platfirmdirs
+  - platformdirs
   - tabulate
   - pip:
     - imutils==0.5.4

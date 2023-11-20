@@ -7,6 +7,8 @@ import csv
 from datetime import datetime
 from pathlib import Path
 import sys
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def benchmark(str_true: str, str_pred: str) -> tuple[int, int, int]:
@@ -90,11 +92,12 @@ def bboxbenchmark(predict_class, root_dir):
     results = {}
     for img, label in labels.items():
         img_path = str(root_dir / img)
-        pred = "".join(p._get_letters(img_path, 2))
-        results[img] = benchmark(label, pred)
+        pred = "".join(p._get_letters(img_path, 2)).lower()
+        results[img] = [pred, *benchmark(label, pred)]
     result_file_name = predict_class.__name__ + "_" + str(
         datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".csv"
     with Path(root_dir / result_file_name).open("w+") as f:
         writer = csv.writer(f)
+        writer.writerow(["image", "label", "prediction", "tp", "fp", "fn"])
         for img in results.keys():
             writer.writerow([img, labels[img], *results[img]])

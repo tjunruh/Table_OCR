@@ -6,8 +6,11 @@ sys.path.append("../application")
 from bboxbenchmark import bboxbenchmark
 from predict import predict
 
+class Vanilla(predict):
+    ...
+
 args = sys.argv[1:]
 if not args:
     raise Exception("No directory given")
 root_dir = args[0]
-bboxbenchmark(predict, root_dir)
+bboxbenchmark(Vanilla, root_dir)

@@ -92,7 +92,7 @@ def bboxbenchmark(predict_class, root_dir):
         img_path = str(root_dir / img)
         pred = "".join(p._get_letters(img_path, 2))
         results[img] = benchmark(label, pred)
-    result_file_name = Path(__file__).stem + "_" + str(
+    result_file_name = predict_class.__name__ + "_" + str(
         datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".csv"
     with Path(root_dir / result_file_name).open("w+") as f:
         writer = csv.writer(f)

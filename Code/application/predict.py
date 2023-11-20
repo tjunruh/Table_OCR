@@ -29,7 +29,9 @@ class predict:
 
         return (cnts, boundingBoxes)
 
-    def __get_letters(self, img, line_thickness):
+    def _get_letters(self, img, line_thickness):
+        self.__LB = self.file_manager_operative.load_LabelBinarizer()
+        self.__model = self.file_manager_operative.load_ocr_model()
         letters = []
         image = cv2.imread(img)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -57,7 +59,7 @@ class predict:
                         ypred = self.__LB.inverse_transform(ypred)
                         [x] = self.__hex_to_char(ypred)
                         letters.append(x)
-                    except:
+                    except Exception as e:
                         pass
                     
             return letters
@@ -78,7 +80,7 @@ class predict:
         for cell in cells:
             if find_shorthand_matches == 1:
                 for boldness in range(2,5):
-                    letters = self.__get_letters(cell, boldness)
+                    letters = self._get_letters(cell, boldness)
                     word = self.__get_word(letters)
                     if boldness == line_thickness:
                         default_word = word
@@ -88,7 +90,7 @@ class predict:
                     else:
                         word = default_word 
             else:
-                letters = self.__get_letters(cell, line_thickness)
+                letters = self._get_letters(cell, line_thickness)
                 word = self.__get_word(letters)
             
             predictions.append(word)

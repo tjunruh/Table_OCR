@@ -3,14 +3,17 @@ from typing import Iterable
 
 from sklearn.preprocessing import LabelBinarizer
 import os
+import sys
 import shutil
 from tensorflow.keras.models import load_model
-from platformdirs import PlatformDirs
 from pathlib import Path
 
 class file_manager:
     def __init__(self):
-        self.dirs = PlatformDirs(appname="tableocr")
+        if getattr(sys, 'frozen', False):  # running in PyInstaller bundle
+            self.parent_dir = Path(sys._MEIPASS).resolve()
+        else:  # running in Python interpreter
+            self.parent_dir = Path(__file__).resolve().parents[2]
         for p in (
             self.settings_path,
             self.batches_path,
@@ -22,29 +25,25 @@ class file_manager:
 
     @property
     def settings_path(self) -> Path:
-        return self.dirs.user_data_path
+        return self.parent_dir / "Settings"
         # ideally user_config_path for text files but for pickles data_path is
         # good for now
 
     @property
     def batches_path(self) -> Path:
-        return self.dirs.user_cache_path / "batches"
+        return self.parent_dir / "Batches"
 
     @property
     def predictions_path(self) -> Path:
-        return self.dirs.user_cache_path / "predictions"
+        return self.parent_dir / "Predictions"
 
     @property
     def storage_path(self) -> Path:
-        return self.dirs.user_cache_path / "storage"
+        return self.parent_dir / "Storage"
 
     @property
     def page_path(self) -> Path:
-        return self.dirs.user_cache_path / "pages"
-
-    @property
-    def repo_path(self) -> Path:
-        return Path(__file__).parents[2]
+        return self.parent_dir / "Pages"
 
     def save_shorthand(self, shorthand):
         path = self.settings_path / 'shorthand.pkl'
@@ -176,14 +175,14 @@ class file_manager:
 
     def load_LabelBinarizer(self):
         LB = LabelBinarizer()
-        path = self.repo_path / 'LabelBinarizer' / 'LabelBinarizer.pkl'
+        path = self.parent_dir / 'LabelBinarizer' / 'LabelBinarizer.pkl'
         with open(path, 'rb') as LB_config:
             LB = pickle.load(LB_config)
 
         return LB
 
     def load_ocr_model(self):
-        path = self.repo_path / "Model"
+        path = self.parent_dir / "Model"
         model = load_model(path)
         return model
 
@@ -232,26 +231,3 @@ class file_manager:
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
         
-            
-if __name__ == '__main__':
-    from tabulate import tabulate
-    fm = file_manager()
-    lut = {
-        "Settings": fm.settings_path,
-        "Batches": fm.batches_path,
-        "Predictions": fm.predictions_path,
-        "Storage": fm.storage_path
-    }
-    for k, v in lut.items():
-        try:
-            shutil.copytree(fm.repo_path / "k", v, dirs_exist_ok=True)
-            shutil.rmtree(fm.repo_path / "k")
-        except:
-            ...
-    print(
-        tabulate({
-            "Previous Path": [str(fm.repo_path / a) for a in lut.keys()],
-            "New Path": [str(a) for a in lut.values()]
-        },
-        headers="keys", tablefmt="simple_grid")
-    )

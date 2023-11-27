@@ -29,7 +29,7 @@ class predict:
 
         return (cnts, boundingBoxes)
 
-    def _get_letters(self, img, line_thickness):
+    def get_letters(self, img, line_thickness):
         self.__LB = self.file_manager_operative.load_LabelBinarizer()
         self.__model = self.file_manager_operative.load_ocr_model()
         letters = []
@@ -80,7 +80,7 @@ class predict:
         for cell in cells:
             if find_shorthand_matches == 1:
                 for boldness in range(2,5):
-                    letters = self._get_letters(cell, boldness)
+                    letters = self.get_letters(cell, boldness)
                     word = self.__get_word(letters)
                     if boldness == line_thickness:
                         default_word = word
@@ -90,7 +90,7 @@ class predict:
                     else:
                         word = default_word 
             else:
-                letters = self._get_letters(cell, line_thickness)
+                letters = self.get_letters(cell, line_thickness)
                 word = self.__get_word(letters)
             
             predictions.append(word)

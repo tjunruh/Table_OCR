@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Implement automatic benchmarking given existing image and labels.
 Usage see bboxtests/vanilla.py
@@ -92,7 +94,7 @@ def bboxbenchmark(predict_class, root_dir):
     results = {}
     for img, label in labels.items():
         img_path = str(root_dir / img)
-        pred = "".join(p._get_letters(img_path, 2)).lower()
+        pred = "".join(p.get_letters(img_path, 2)).lower()
         results[img] = [pred, *benchmark(label, pred)]
     result_file_name = predict_class.__name__ + "_" + str(
         datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".csv"
@@ -101,3 +103,39 @@ def bboxbenchmark(predict_class, root_dir):
         writer.writerow(["image", "label", "prediction", "tp", "fp", "fn"])
         for img in results.keys():
             writer.writerow([img, labels[img], *results[img]])
+    return result_file_name
+
+
+def get_metrics(*csv_files: Path | str):
+    from tabulate import tabulate
+    tp, fp, fn = 0, 0, 0
+    for csv_file in csv_files:
+        csv_file = Path(csv_file).resolve()
+        if not csv_file.is_file():
+            raise FileNotFoundError(f"{csv_file} not exists")
+        with csv_file.open("r") as f:
+            reader = csv.reader(f)
+            nrow = 0
+            for row in reader:
+                nrow += 1
+                if len(row) < 6:
+                    raise IndexError(f"Row #{nrow} does not have at least 6 columns")
+                if nrow == 1:
+                    continue
+                tp += int(row[3])
+                fp += int(row[4])
+                fn += int(row[5])
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    f1 = 2 / (1/precision + 1/recall)
+    print(tabulate([
+        ["Precision", precision],
+        ["Recall", recall],
+        ["F1 Score", f1]
+    ], tablefmt="simple_grid"))
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if not args:
+        raise Exception("No files given")
+    get_metrics(*args)

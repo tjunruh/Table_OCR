@@ -14,6 +14,10 @@ class predict:
     __model = None
     __LB = None
 
+    def __init__(self):
+        self.__LB = self.file_manager_operative.load_LabelBinarizer()
+        self.__model = self.file_manager_operative.load_ocr_model()
+
     def __hex_to_char(self, hex_input):
         return(chr(int(hex_input[0], 16)))
 
@@ -30,8 +34,6 @@ class predict:
         return (cnts, boundingBoxes)
 
     def get_letters(self, img, line_thickness):
-        self.__LB = self.file_manager_operative.load_LabelBinarizer()
-        self.__model = self.file_manager_operative.load_ocr_model()
         letters = []
         image = cv2.imread(img)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -73,8 +75,6 @@ class predict:
 
     def get_predictions(self, cells, line_thickness, find_shorthand_matches, multiprocessing):
         global m_job_num
-        self.__LB = self.file_manager_operative.load_LabelBinarizer()
-        self.__model = self.file_manager_operative.load_ocr_model()
         predictions = []
         default_word = ''
         for cell in cells:

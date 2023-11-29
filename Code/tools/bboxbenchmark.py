@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def benchmark(str_true: str, str_pred: str) -> tuple[int, int, int]:
+def benchmark(str_true: str, str_pred: str):
     """
     Perform benchmarking on prediction string against true string, where
         - True Positive is number of letters the prediction correctly matches

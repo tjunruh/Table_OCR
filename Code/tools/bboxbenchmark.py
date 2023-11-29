@@ -30,8 +30,12 @@ def benchmark(str_true: str, str_pred: str):
     Returns:
     (true_positive, false_positive, false_negative)
     """
-    str_true = "".join(a for a in str_true if a.isalnum()).upper()
-    str_pred = "".join(a for a in str_pred if a.isalnum()).upper()
+    def preprocess(s):
+        s = "".join(a for a in s if a.isalnum()).upper()
+        s = s.replace("1", "I").replace("0", "O")
+        return s
+    str_true = preprocess(str_true)
+    str_pred = preprocess(str_pred)
     i_true, i_pred = 0, 0
     true_positive = 0
     while True:

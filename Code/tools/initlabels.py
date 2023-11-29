@@ -50,7 +50,8 @@ def main(args):
         with labels_file.open("r") as f:
             reader = csv.reader(f)
             for row in reader:
-                labels[row[0]] = row[1]
+                if len(row) > 1:
+                    labels[row[0]] = row[1]
     with labels_file.open("w+") as f:
         writer = csv.writer(f)
         for img in img_files:

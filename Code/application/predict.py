@@ -18,10 +18,10 @@ class predict:
         self.__LB = self.file_manager_operative.load_LabelBinarizer()
         self.__model = self.file_manager_operative.load_ocr_model()
 
-    def __hex_to_char(self, hex_input):
+    def _hex_to_char(self, hex_input):
         return(chr(int(hex_input[0], 16)))
 
-    def __sort_contours(self, cnts, method="left-to-right"):
+    def _sort_contours(self, cnts, method="left-to-right"):
         reverse = False
         i = 0
         if method == "right-to-left" or method == "bottom-to-top":
@@ -43,7 +43,7 @@ class predict:
         cnts = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
         if len(cnts) > 0:
-            cnts = self.__sort_contours(cnts, method="left-to-right")[0]
+            cnts = self._sort_contours(cnts, method="left-to-right")[0]
 
             box_expand = 2
             for c in cnts:
@@ -59,14 +59,14 @@ class predict:
                         thresh = thresh.reshape(1,32,32,1)
                         ypred = self.__model.predict(thresh, verbose=0)
                         ypred = self.__LB.inverse_transform(ypred)
-                        [x] = self.__hex_to_char(ypred)
+                        [x] = self._hex_to_char(ypred)
                         letters.append(x)
                     except Exception as e:
                         pass
                     
             return letters
 
-    def __get_word(self, letters):
+    def _get_word(self, letters):
         word = ""
         if letters:
             for letter in letters:
@@ -81,7 +81,7 @@ class predict:
             if find_shorthand_matches == 1:
                 for boldness in range(2,5):
                     letters = self.get_letters(cell, boldness)
-                    word = self.__get_word(letters)
+                    word = self._get_word(letters)
                     if boldness == line_thickness:
                         default_word = word
                         
@@ -91,7 +91,7 @@ class predict:
                         word = default_word 
             else:
                 letters = self.get_letters(cell, line_thickness)
-                word = self.__get_word(letters)
+                word = self._get_word(letters)
             
             predictions.append(word)
             if multiprocessing:

@@ -82,10 +82,15 @@ def bboxbenchmark(predict_class, root_dir):
     if not labels_file.exists():
         raise FileNotFoundError("labels.csv not found")
     labels = {}
-    with labels_file.open("r") as f:
+    with open(str(labels_file), "r") as f:
         reader = csv.reader(f)
         for row in reader:
-            labels[row[0]] = row[1]
+            if len(row) == 0:
+                continue
+            elif len(row) < 2:
+                raise ValueError(f"Label of {row[0]} is not given")
+            else:
+                labels[row[0]] = row[1]
     empty_labels = [k for k, v in labels.items() if not v]
     if empty_labels:
         raise Exception(
@@ -98,7 +103,8 @@ def bboxbenchmark(predict_class, root_dir):
         results[img] = [pred, *benchmark(label, pred)]
     result_file_name = predict_class.__name__ + "_" + str(
         datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".csv"
-    with Path(root_dir / result_file_name).open("w+") as f:
+    result_file_path = root_dir / result_file_name
+    with open(str(result_file_path), "w+") as f:
         writer = csv.writer(f)
         writer.writerow(["image", "label", "prediction", "tp", "fp", "fn"])
         for img in results.keys():
@@ -113,7 +119,7 @@ def get_metrics(*csv_files):
         csv_file = Path(csv_file).resolve()
         if not csv_file.is_file():
             raise FileNotFoundError(f"{csv_file} not exists")
-        with csv_file.open("r") as f:
+        with open(str(csv_file), "r") as f:
             reader = csv.reader(f)
             nrow = 0
             for row in reader:

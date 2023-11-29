@@ -106,7 +106,7 @@ def bboxbenchmark(predict_class, root_dir):
     return result_file_name
 
 
-def get_metrics(*csv_files: Path | str):
+def get_metrics(*csv_files):
     from tabulate import tabulate
     tp, fp, fn = 0, 0, 0
     for csv_file in csv_files:

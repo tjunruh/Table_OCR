@@ -11,12 +11,12 @@ from multiprocessing import Pool, cpu_count, Value
 class predict:
     file_manager_operative = file_manager()
     short_to_long_operative = short_to_long()
-    __model = None
-    __LB = None
+    _model = None
+    _LB = None
 
     def __init__(self):
-        self.__LB = self.file_manager_operative.load_LabelBinarizer()
-        self.__model = self.file_manager_operative.load_ocr_model()
+        self._LB = self.file_manager_operative.load_LabelBinarizer()
+        self._model = self.file_manager_operative.load_ocr_model()
 
     def _hex_to_char(self, hex_input):
         return(chr(int(hex_input[0], 16)))
@@ -57,8 +57,8 @@ class predict:
                         thresh = thresh.astype("float32") / 255.0
                         thresh = np.expand_dims(thresh, axis=-1)
                         thresh = thresh.reshape(1,32,32,1)
-                        ypred = self.__model.predict(thresh, verbose=0)
-                        ypred = self.__LB.inverse_transform(ypred)
+                        ypred = self._model.predict(thresh, verbose=0)
+                        ypred = self._LB.inverse_transform(ypred)
                         [x] = self._hex_to_char(ypred)
                         letters.append(x)
                     except Exception as e:

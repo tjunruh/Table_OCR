@@ -75,6 +75,8 @@ class predict:
 
     def get_predictions(self, cells, line_thickness, find_shorthand_matches, multiprocessing):
         global m_job_num
+        self._LB = self.file_manager_operative.load_LabelBinarizer()
+        self._model = self.file_manager_operative.load_ocr_model()
         predictions = []
         default_word = ''
         for cell in cells:

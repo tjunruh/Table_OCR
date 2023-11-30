@@ -19,7 +19,7 @@ def show_img(img, title=None):
         cv2.destroyAllWindows()
 
 
-class BtrMorph(predict):
+class ConnCompBtrMorph(predict):
     @staticmethod
     def remove_lines(img):
         hkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
@@ -101,5 +101,5 @@ args = sys.argv[1:]
 if not args:
     raise Exception("No directory given")
 root_dir = args[0]
-result_file = bboxbenchmark(BtrMorph, root_dir)
+result_file = bboxbenchmark(ConnCompBtrMorph, root_dir)
 get_metrics(root_dir + "/" + result_file)

@@ -89,11 +89,7 @@ def bboxbenchmark(predict_class, root_dir):
     with open(str(labels_file), "r") as f:
         reader = csv.reader(f)
         for row in reader:
-            if len(row) == 0:
-                continue
-            elif len(row) < 2:
-                raise ValueError(f"Label of {row[0]} is not given")
-            else:
+            if len(row) >= 2:
                 labels[row[0]] = row[1]
     empty_labels = [k for k, v in labels.items() if not v]
     if empty_labels:

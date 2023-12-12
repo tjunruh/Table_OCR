@@ -12,10 +12,12 @@ class table_extractor:
     def __pdf_to_jpg(self, file_path):
         self.__convert_pdf_error = False
         try:
-            jpgs = convert_from_path(file_path, poppler_path='../../Release-23.07.0-0/poppler-23.07.0/Library/bin')
+            jpgs = convert_from_path(file_path)
 
             for page in range(len(jpgs)):
-                jpgs[page].save('page' + str(page) + '.jpg', 'JPEG')
+                jpgs[page].save(
+                    self.file_manager_operative.page_path / f"page{page}.jpg",
+                    'JPEG')
 
             return jpgs
         except:
@@ -26,7 +28,9 @@ class table_extractor:
     def __rotate_jpgs(self, jpgs):
         imgs = []
         for page in range(len(jpgs)):
-            img = cv2.imread('page' + str(page) + '.jpg')
+            img = cv2.imread(
+                str(self.file_manager_operative.page_path / f"page{page}.jpg")
+            )
             img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
             imgs.append(img)
         return imgs
@@ -85,8 +89,8 @@ class table_extractor:
             x, y, w, h = box
             box_expand = 2
             roi = img[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
-            filename = f'../../Storage/{self.__num_boxes}.jpg'
-            cv2.imwrite(filename, roi)
+            filename = self.file_manager_operative.storage_path / f'{self.__num_boxes}.jpg'
+            cv2.imwrite(str(filename), roi)
             self.__num_boxes += 1
         
     def extract_cells(self, file_path, messagebox_pdf_error):

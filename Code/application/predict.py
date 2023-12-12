@@ -11,17 +11,13 @@ from multiprocessing import Pool, cpu_count, Value
 class predict:
     file_manager_operative = file_manager()
     short_to_long_operative = short_to_long()
-    _model = None
-    _LB = None
+    __model = None
+    __LB = None
 
-    def __init__(self):
-        self._LB = self.file_manager_operative.load_LabelBinarizer()
-        self._model = self.file_manager_operative.load_ocr_model()
-
-    def _hex_to_char(self, hex_input):
+    def __hex_to_char(self, hex_input):
         return(chr(int(hex_input[0], 16)))
 
-    def _sort_contours(self, cnts, method="left-to-right"):
+    def __sort_contours(self, cnts, method="left-to-right"):
         reverse = False
         i = 0
         if method == "right-to-left" or method == "bottom-to-top":
@@ -33,7 +29,7 @@ class predict:
 
         return (cnts, boundingBoxes)
 
-    def get_letters(self, img, line_thickness):
+    def __get_letters(self, img, line_thickness):
         letters = []
         image = cv2.imread(img)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -43,7 +39,7 @@ class predict:
         cnts = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
         if len(cnts) > 0:
-            cnts = self._sort_contours(cnts, method="left-to-right")[0]
+            cnts = self.__sort_contours(cnts, method="left-to-right")[0]
 
             box_expand = 2
             for c in cnts:
@@ -57,16 +53,16 @@ class predict:
                         thresh = thresh.astype("float32") / 255.0
                         thresh = np.expand_dims(thresh, axis=-1)
                         thresh = thresh.reshape(1,32,32,1)
-                        ypred = self._model.predict(thresh, verbose=0)
-                        ypred = self._LB.inverse_transform(ypred)
-                        [x] = self._hex_to_char(ypred)
+                        ypred = self.__model.predict(thresh, verbose=0)
+                        ypred = self.__LB.inverse_transform(ypred)
+                        [x] = self.__hex_to_char(ypred)
                         letters.append(x)
                     except Exception as e:
                         pass
                     
             return letters
 
-    def _get_word(self, letters):
+    def __get_word(self, letters):
         word = ""
         if letters:
             for letter in letters:
@@ -75,15 +71,15 @@ class predict:
 
     def get_predictions(self, cells, line_thickness, find_shorthand_matches, multiprocessing):
         global m_job_num
-        self._LB = self.file_manager_operative.load_LabelBinarizer()
-        self._model = self.file_manager_operative.load_ocr_model()
+        self.__LB = self.file_manager_operative.load_LabelBinarizer()
+        self.__model = self.file_manager_operative.load_ocr_model()
         predictions = []
         default_word = ''
         for cell in cells:
             if find_shorthand_matches == 1:
                 for boldness in range(2,5):
-                    letters = self.get_letters(cell, boldness)
-                    word = self._get_word(letters)
+                    letters = self.__get_letters(cell, boldness)
+                    word = self.__get_word(letters)
                     if boldness == line_thickness:
                         default_word = word
                         
@@ -92,8 +88,8 @@ class predict:
                     else:
                         word = default_word 
             else:
-                letters = self.get_letters(cell, line_thickness)
-                word = self._get_word(letters)
+                letters = self.__get_letters(cell, line_thickness)
+                word = self.__get_word(letters)
             
             predictions.append(word)
             if multiprocessing:

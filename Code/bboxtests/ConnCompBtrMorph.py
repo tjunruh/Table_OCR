@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 
@@ -6,20 +6,23 @@ import skimage
 
 sys.path.append("../tools")
 sys.path.append("../application")
-from bboxbenchmark import bboxbenchmark, get_metrics
-from predict import predict
+from file_manager import file_manager
 import cv2
 import numpy as np
+import os
 
+class ConnCompBtrMorph:
+    file_manager_operative = file_manager()
+    _model = None
+    _LB = None
 
-def show_img(img, title=None):
-    title = title or ""
-    cv2.imshow(title, img)
-    if cv2.waitKey(0):
-        cv2.destroyAllWindows()
+    def __init__(self):
+        self._LB = self.file_manager_operative.load_LabelBinarizer()
+        self._model = self.file_manager_operative.load_ocr_model()
 
-
-class ConnCompBtrMorph(predict):
+    def _hex_to_char(self, hex_input):
+        return(chr(int(hex_input[0], 16)))
+    
     @staticmethod
     def remove_lines(img):
         hkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
@@ -34,7 +37,7 @@ class ConnCompBtrMorph(predict):
         sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
         return sorted_bounding_boxes
 
-    def get_letters(self, img, line_thickness):
+    def get_letters(self, img, line_thickness, analyzed_cell_directory):
         letters = []
         image_orig = cv2.imread(img)
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
@@ -43,7 +46,7 @@ class ConnCompBtrMorph(predict):
         image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8),
                               iterations=1)
         image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8),
-                               iterations=2)
+                               iterations=1)
         image_bin = skimage.morphology.area_opening(image_bin)
         bounding_boxes = []
         analysis = cv2.connectedComponentsWithStats(image_bin, 4, cv2.CV_32S)
@@ -54,22 +57,22 @@ class ConnCompBtrMorph(predict):
 
             # Area of the component
             area = values[i, cv2.CC_STAT_AREA]
+            if (area > 100):
+                # Now extract the coordinate points
+                x1 = values[i, cv2.CC_STAT_LEFT]
+                y1 = values[i, cv2.CC_STAT_TOP]
+                w = values[i, cv2.CC_STAT_WIDTH]
+                h = values[i, cv2.CC_STAT_HEIGHT]
 
-            # Now extract the coordinate points
-            x1 = values[i, cv2.CC_STAT_LEFT]
-            y1 = values[i, cv2.CC_STAT_TOP]
-            w = values[i, cv2.CC_STAT_WIDTH]
-            h = values[i, cv2.CC_STAT_HEIGHT]
+                bounding_boxes.append([x1, y1, w, h])
 
-            bounding_boxes.append([x1, y1, w, h])
+                # Coordinate of the bounding box
+                pt1 = (x1, y1)
+                pt2 = (x1 + w, y1 + h)
 
-            # Coordinate of the bounding box
-            pt1 = (x1, y1)
-            pt2 = (x1 + w, y1 + h)
+                # Bounding boxes for each component
+                cv2.rectangle(new_img, pt1, pt2, (0, 255, 0), 3)
 
-            # Bounding boxes for each component
-            cv2.rectangle(new_img, pt1, pt2, (0, 255, 0), 3)
-        # show_img(new_img)
         if len(bounding_boxes) > 0:
             bounding_boxes = self._sort_bounding_boxes(bounding_boxes)
             box_expand = 2
@@ -93,13 +96,6 @@ class ConnCompBtrMorph(predict):
                     letters.append(x)
                 except Exception as e:
                     pass
+            cv2.imwrite(str(analyzed_cell_directory + "/" + os.path.basename(img)), new_img)
+        return letters
 
-            return letters
-
-
-args = sys.argv[1:]
-if not args:
-    raise Exception("No directory given")
-root_dir = args[0]
-result_file = bboxbenchmark(ConnCompBtrMorph, root_dir)
-get_metrics(root_dir + "/" + result_file)

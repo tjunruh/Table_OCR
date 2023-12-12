@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 import sys
 import warnings
+import os
 warnings.filterwarnings("ignore")
 
 
@@ -95,14 +96,18 @@ def bboxbenchmark(predict_class, root_dir):
     if empty_labels:
         raise Exception(
             f"{len(empty_labels)} image(s) are not labeled:\n{empty_labels}")
+    analyzed_cells_directory = str(root_dir) + "/analyzed_cells"
+    if not os.path.isdir(analyzed_cells_directory):
+        os.mkdir(analyzed_cells_directory)
     p = predict_class()
     results = {}
     for img, label in labels.items():
         img_path = str(root_dir / img)
-        pred = "".join(p.get_letters(img_path, 2)).lower()
+        pred = "".join(p.get_letters(img_path, 2, analyzed_cells_directory)).lower()
         results[img] = [pred, *benchmark(label, pred)]
-    result_file_name = predict_class.__name__ + "_" + str(
-        datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".csv"
+    last_dir = os.path.basename(os.path.normpath(str(root_dir)))
+    result_file_name = predict_class.__name__ + "_" + last_dir + ".csv"
+    result_file_path = root_dir / last_dir
     result_file_path = root_dir / result_file_name
     with open(str(result_file_path), "w+") as f:
         writer = csv.writer(f)
@@ -112,7 +117,7 @@ def bboxbenchmark(predict_class, root_dir):
     return result_file_name
 
 
-def get_metrics(*csv_files):
+def get_metrics(csv_files):
     from tabulate import tabulate
     tp, fp, fn = 0, 0, 0
     for csv_file in csv_files:
@@ -123,14 +128,15 @@ def get_metrics(*csv_files):
             reader = csv.reader(f)
             nrow = 0
             for row in reader:
-                nrow += 1
-                if len(row) < 6:
-                    raise IndexError(f"Row #{nrow} does not have at least 6 columns")
-                if nrow == 1:
-                    continue
-                tp += int(row[3])
-                fp += int(row[4])
-                fn += int(row[5])
+                if row:
+                    nrow += 1
+                    if len(row) < 6:
+                        raise IndexError(f"Row #{nrow} does not have at least 6 columns")
+                    if nrow == 1:
+                        continue
+                    tp += int(row[3])
+                    fp += int(row[4])
+                    fn += int(row[5])
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
     f1 = 2 / (1/precision + 1/recall)

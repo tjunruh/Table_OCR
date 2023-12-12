@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 
@@ -6,25 +6,29 @@ import skimage
 
 sys.path.append("../tools")
 sys.path.append("../application")
-from bboxbenchmark import bboxbenchmark, get_metrics
-from predict import predict
+from file_manager import file_manager
 import cv2
 import numpy as np
-
-
-def show_img(img, title=None):
-    title = title or ""
-    cv2.imshow(title, img)
-    if cv2.waitKey(0):
-        cv2.destroyAllWindows()
-
+import os
+    
 def draw_box(src, x, y, h, w, r=0, g=200, b=0, a=0.4):
     overlay = src.copy()
     cv2.rectangle(overlay, (y, x), (y + w, x + h), (r, g, b),
                   -1)
     return cv2.addWeighted(overlay, a, src, 1 - a, 0)
 
-class XYsplit(predict):
+class XYsplit:
+    file_manager_operative = file_manager()
+    _model = None
+    _LB = None
+
+    def __init__(self):
+        self._LB = self.file_manager_operative.load_LabelBinarizer()
+        self._model = self.file_manager_operative.load_ocr_model()
+    
+    def _hex_to_char(self, hex_input):
+        return(chr(int(hex_input[0], 16)))
+    
     @staticmethod
     def remove_lines(img):
         hkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
@@ -39,7 +43,7 @@ class XYsplit(predict):
         sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
         return sorted_bounding_boxes
 
-    def get_letters(self, img, line_thickness):
+    def get_letters(self, img, line_thickness, analyzed_cell_directory):
         letters = []
         image_orig = cv2.imread(img)
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
@@ -79,7 +83,7 @@ class XYsplit(predict):
         boxes = np.array(boxes)
         for box in boxes:
             image_decorated = draw_box(image_decorated, *box)
-        # show_img(image_decorated)
+
         pad = 5
         letters = []
         for box in boxes:
@@ -95,11 +99,5 @@ class XYsplit(predict):
             ypred = self._LB.inverse_transform(ypred)
             [x] = self._hex_to_char(ypred)
             letters.append(x)
+        cv2.imwrite(str(analyzed_cell_directory + "/" + os.path.basename(img)), image_decorated)
         return letters
-
-args = sys.argv[1:]
-if not args:
-    raise Exception("No directory given")
-root_dir = args[0]
-result_file = bboxbenchmark(XYsplit, root_dir)
-get_metrics(root_dir + "/" + result_file)

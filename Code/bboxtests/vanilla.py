@@ -6,10 +6,10 @@ sys.path.append("../tools")
 sys.path.append("../application")
 from bboxbenchmark import bboxbenchmark, get_metrics
 #from ConnCompBtrMorph import ConnCompBtrMorph
-#from contours import contours
-from xysplit import XYsplit
+from contours import contours
+#from xysplit import XYsplit
 
-class Vanilla(XYsplit):
+class Vanilla(contours):
     ...
 
 args = sys.argv[1:]
@@ -29,7 +29,7 @@ if recursive == "True":
         if os.path.isdir(subdirectory):
             print("working on " + subdirectory)
             if generate_metrics == "True":
-                result_files.append(root_dir + "/" + bboxbenchmark(Vanilla, subdirectory))
+                result_files.append(subdirectory + "/" + bboxbenchmark(Vanilla, subdirectory))
             elif generate_metrics == "False":
                 for filename in os.listdir(root_dir + "/" + subdirectory):
                     f = root_dir + "/" + subdirectory + "/" + filename

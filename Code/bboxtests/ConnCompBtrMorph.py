@@ -40,13 +40,13 @@ class ConnCompBtrMorph:
     def get_letters(self, img, line_thickness, analyzed_cell_directory):
         letters = []
         image_orig = cv2.imread(img)
+        box_shrink = 2
+        h, w, c = image_orig.shape
+        image_orig = image_orig[(box_shrink):(h - box_shrink), (box_shrink):(w - box_shrink)]
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
-        _, image_bin = cv2.threshold(image_gray, 0, 255,
-                                     cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8),
-                              iterations=1)
-        image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8),
-                               iterations=1)
+        _, image_bin = cv2.threshold(image_gray, 127, 255, cv2.THRESH_BINARY_INV)
+        image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8), iterations=1)
+        image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8), iterations=1)
         image_bin = skimage.morphology.area_opening(image_bin)
         bounding_boxes = []
         analysis = cv2.connectedComponentsWithStats(image_bin, 4, cv2.CV_32S)
@@ -75,18 +75,13 @@ class ConnCompBtrMorph:
 
         if len(bounding_boxes) > 0:
             bounding_boxes = self._sort_bounding_boxes(bounding_boxes)
-            box_expand = 2
+            box_expand = 5
             for box in bounding_boxes:
                 (x, y, w, h) = box
-                roi = image_gray[(y - box_expand):(y + h + box_expand),
-                      (x - box_expand):(x + w + box_expand)]
-                image_bin = cv2.threshold(roi, 0, 255,
-                                          cv2.THRESH_BINARY_INV |
-                                          cv2.THRESH_OTSU)[
-                    1]
+                roi = image_gray[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
+                image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
                 try:
-                    image_bin = cv2.resize(image_bin, (32, 32),
-                                           interpolation=cv2.INTER_CUBIC)
+                    image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)
                     image_bin = image_bin.astype("float32") / 255.0
                     image_bin = np.expand_dims(image_bin, axis=-1)
                     image_bin = image_bin.reshape(1, 32, 32, 1)

@@ -128,8 +128,9 @@ class ConnCompBtrMorph:
             bounding_boxes = self._combine_components(bounding_boxes, centroids, x_tolerance, y_tolerance)
             bounding_boxes = self._sort_bounding_boxes(bounding_boxes)
             box_expand = 5
-            for box in bounding_boxes:
-                (x1, y1, x2, y2) = box
+            i = 0
+            while i < len(bounding_boxes):
+                (x1, y1, x2, y2) = bounding_boxes[i]
                 cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
                 roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
                 image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
@@ -142,8 +143,13 @@ class ConnCompBtrMorph:
                     ypred = self._LB.inverse_transform(ypred)
                     [x] = self._hex_to_char(ypred)
                     letters.append(x)
+                    i = i + 1
+                    box_expand = 5
                 except Exception as e:
-                    pass
+                    if box_expand > 0:
+                        box_expand = box_expand - 1
+                    else:
+                        i = i + 1
             cv2.imwrite(str(analyzed_cell_directory + "/" + os.path.basename(img)), new_img)
         return letters
 

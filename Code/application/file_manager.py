@@ -97,32 +97,6 @@ class file_manager:
 
         return rows_columns
 
-    def save_line_thickness(self, line_thickness):
-        path = self.settings_path / 'line_thickness.pkl'
-        pickle.dump(line_thickness, open(path, 'wb+'))
-
-    def load_line_thickness(self):
-        line_thickness = "2"
-        path = self.settings_path / 'line_thickness.pkl'
-        if(os.path.isfile(path)):
-            with open(path, 'rb') as lt_load:
-                line_thickness = pickle.load(lt_load)
-
-        return line_thickness
-
-    def save_find_shorthand_matches(self, find_shorthand_matches):
-        path = self.settings_path / 'find_shorthand_matches.pkl'
-        pickle.dump(find_shorthand_matches, open(path, 'wb+'))
-
-    def load_find_shorthand_matches(self):
-        find_shorthand_matches = 0
-        path = self.settings_path / 'find_shorthand_matches.pkl'
-        if(os.path.isfile(path)):
-            with open(path, 'rb') as fsm_load:
-                find_shorthand_matches = pickle.load(fsm_load)
-
-        return find_shorthand_matches
-
     def save_batch(self, batch, batch_num):
         path = self.batches_path / f"batch_{batch_num}"
         pickle.dump(batch, open(path, 'wb+'))

@@ -7,6 +7,7 @@ import numpy as np
 from short_to_long import short_to_long
 import time
 from multiprocessing import Pool, cpu_count, Value
+import skimage
 
 class predict:
     file_manager_operative = file_manager()
@@ -17,50 +18,130 @@ class predict:
     def __hex_to_char(self, hex_input):
         return(chr(int(hex_input[0], 16)))
 
-    def __sort_contours(self, cnts, method="left-to-right"):
-        reverse = False
-        i = 0
-        if method == "right-to-left" or method == "bottom-to-top":
-            reverse = True
-        if method == "top-to-bottom" or method == "bottom-to-top":
-            i = 1
-        boundingBoxes = [cv2.boundingRect(c) for c in cnts]
-        (cnts, boundingBoxes) = zip(*sorted(zip(cnts, boundingBoxes), key=lambda b:b[1][i], reverse=reverse))
+    def __sort_bounding_boxes(self, bounding_boxes):
+        sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
+        return sorted_bounding_boxes
 
-        return (cnts, boundingBoxes)
 
-    def __get_letters(self, img, line_thickness):
-        letters = []
-        image = cv2.imread(img)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        ret,thresh1 = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
-        dilated = cv2.dilate(thresh1, None, iterations=line_thickness)
+    def __check_node_connections(self, node, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance):
+        node_bounding_box, node_centroid = node
+        index = 0
+        for component in components:
+            if index not in analyzed_component_ids:
+                bounding_box, centroid = component
+                x_node, y_node = node_centroid
+                x_component, y_component = centroid
+                if (abs(x_node - x_component) < x_tolerance) and (abs(y_node - y_component) < y_tolerance):
+                    grouped_components.append(component)
+                    analyzed_component_ids.append(index)
+                    grouped_components, analyzed_component_ids = self.__check_node_connections(component, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance)
+            index = index + 1
 
-        cnts = cv2.findContours(dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
-        if len(cnts) > 0:
-            cnts = self.__sort_contours(cnts, method="left-to-right")[0]
+        return grouped_components, analyzed_component_ids
+        
+    def __combine_components(self, bounding_boxes, centroids, x_tolerance, y_tolerance):
+        updated_components = []
+        component_subgroup = []
+        analyzed_component_ids = []
+        index = 0
+        components = tuple(zip(bounding_boxes, centroids))
+        for component in components:
+            if index not in analyzed_component_ids:
+                component_subgroup.append(component)
+                analyzed_component_ids.append(index)
+                component_subgroup, analyzed_component_ids = self.__check_node_connections(component, components, component_subgroup, analyzed_component_ids, x_tolerance, y_tolerance)
+                updated_components.append(component_subgroup)
+                component_subgroup = []
+            index = index + 1
+            
+        x1_group = []
+        x2_group = []
+        y1_group = []
+        y2_group = []
+        updated_bounding_boxes = []
+        for subgroup in updated_components:
+            for bounding_box, centroid in subgroup:
+                x1, y1, x2, y2 = bounding_box
+                x1_group.append(x1)
+                x2_group.append(x2)
+                y1_group.append(y1)
+                y2_group.append(y2)
+            updated_bounding_boxes.append([min(x1_group), min(y1_group), max(x2_group), max(y2_group)])
+            x1_group = []
+            x2_group = []
+            y1_group = []
+            y2_group = []
+        return updated_bounding_boxes
+            
 
-            box_expand = 2
-            for c in cnts:
-                if cv2.contourArea(c) > 275:
-                    (x, y, w, h) = cv2.boundingRect(c)
-                    cv2.rectangle(image, (x,y), (x+w,y+h), (0,255,0), 2)
-                    roi = gray[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
-                    thresh = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-                    try:
-                        thresh = cv2.resize(thresh, (32, 32), interpolation = cv2.INTER_CUBIC)
-                        thresh = thresh.astype("float32") / 255.0
-                        thresh = np.expand_dims(thresh, axis=-1)
-                        thresh = thresh.reshape(1,32,32,1)
-                        ypred = self.__model.predict(thresh, verbose=0)
-                        ypred = self.__LB.inverse_transform(ypred)
-                        [x] = self.__hex_to_char(ypred)
-                        letters.append(x)
-                    except Exception as e:
-                        pass
                     
-            return letters
+
+    def __get_letters(self, img):
+        x_tolerance = 20
+        y_tolerance = 30
+        letters = []
+        image_orig = cv2.imread(img)
+        box_shrink = 2
+        h, w, c = image_orig.shape
+        image_orig = image_orig[(box_shrink):(h - box_shrink), (box_shrink):(w - box_shrink)]
+        image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
+        _, image_bin = cv2.threshold(image_gray, 127, 255, cv2.THRESH_BINARY_INV)
+        image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8), iterations=1)
+        image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8), iterations=1)
+        image_bin = skimage.morphology.area_opening(image_bin)
+        bounding_boxes = []
+        centroids = []
+        analysis = cv2.connectedComponentsWithStats(image_bin, 4, cv2.CV_32S)
+        (totalLabels, label_ids, values, centroid) = analysis
+        
+        # Loop through each component
+        new_img = image_orig.copy()
+        for i in range(1, totalLabels):
+
+            # Area of the component
+            area = values[i, cv2.CC_STAT_AREA]
+            if (area > 75):
+                # Now extract the coordinate points
+                x1 = values[i, cv2.CC_STAT_LEFT]
+                y1 = values[i, cv2.CC_STAT_TOP]
+                w = values[i, cv2.CC_STAT_WIDTH]
+                h = values[i, cv2.CC_STAT_HEIGHT]
+
+                x2 = x1 + w
+                y2 = y1 + h
+                xc, yc = centroid[i]
+                bounding_boxes.append([x1, y1, x2, y2])
+                centroids.append([xc, yc])
+
+        if len(bounding_boxes) > 0:
+            bounding_boxes = self.__combine_components(bounding_boxes, centroids, x_tolerance, y_tolerance)
+            bounding_boxes = self.__sort_bounding_boxes(bounding_boxes)
+            box_expand = 5
+            i = 0
+            while i < len(bounding_boxes):
+                (x1, y1, x2, y2) = bounding_boxes[i]
+                cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
+                roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
+                image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+                try:
+                    image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)
+                    image_bin = image_bin.astype("float32") / 255.0
+                    image_bin = np.expand_dims(image_bin, axis=-1)
+                    image_bin = image_bin.reshape(1, 32, 32, 1)
+                    ypred = self.__model.predict(image_bin, verbose=0)
+                    ypred = self.__LB.inverse_transform(ypred)
+                    [x] = self.__hex_to_char(ypred)
+                    letters.append(x)
+                    i = i + 1
+                    box_expand = 5
+                except Exception as e:
+                    if box_expand > 0:
+                        box_expand = box_expand - 1
+                    else:
+                        i = i + 1
+                        
+        cv2.imwrite(img, new_img)
+        return letters
 
     def __get_word(self, letters):
         word = ""
@@ -69,28 +150,15 @@ class predict:
                 word += letter
         return word
 
-    def get_predictions(self, cells, line_thickness, find_shorthand_matches, multiprocessing):
+    def get_predictions(self, cells, multiprocessing):
         global m_job_num
         self.__LB = self.file_manager_operative.load_LabelBinarizer()
         self.__model = self.file_manager_operative.load_ocr_model()
         predictions = []
         default_word = ''
         for cell in cells:
-            if find_shorthand_matches == 1:
-                for boldness in range(2,5):
-                    letters = self.__get_letters(cell, boldness)
-                    word = self.__get_word(letters)
-                    if boldness == line_thickness:
-                        default_word = word
-                        
-                    if self.short_to_long_operative.in_short(word):
-                        break
-                    else:
-                        word = default_word 
-            else:
-                letters = self.__get_letters(cell, line_thickness)
-                word = self.__get_word(letters)
-            
+            letters = self.__get_letters(cell)
+            word = self.__get_word(letters)
             predictions.append(word)
             if multiprocessing:
                 m_job_num.value += 1
@@ -100,9 +168,7 @@ class predict:
 
     def run_batch_predictions(self, batch_num):
         cells = self.file_manager_operative.load_batch(batch_num)
-        line_thickness = self.file_manager_operative.load_line_thickness()
-        find_shorthand_matches = self.file_manager_operative.load_find_shorthand_matches()
-        predictions = self.get_predictions(cells, int(line_thickness), int(find_shorthand_matches), True)
+        predictions = self.get_predictions(cells, True)
         self.file_manager_operative.save_prediction_results(predictions, batch_num)
 
     def init_workers(self, job_num):

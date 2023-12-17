@@ -26,22 +26,17 @@ class main_window:
     __select_file_frame = None
     __display_file_frame = None
     __row_column_frame = None
-    __line_thickness_frame = None
     __generate_frame = None
     __rows = None
     __columns = None
     __file_display = None
     __file_name = None
     pb = None
-    __line_thickness = None
-    __find_shorthand_matches = None
     __rows_columns = None
     __multiprocessing = True
         
     def __close(self):
         self.__rows_columns.clear()
-        self.file_manager_operative.save_line_thickness(self.__line_thickness.get())
-        self.file_manager_operative.save_find_shorthand_matches(self.__find_shorthand_matches.get())
         if((str(self.__rows.get()).isnumeric()) and (str(self.__columns.get()).isnumeric())):
             self.__rows_columns.append(self.__rows.get())
             self.__rows_columns.append(self.__columns.get())
@@ -70,7 +65,6 @@ class main_window:
         self.__rows_columns.append(self.__rows.get())
         self.__rows_columns.append(self.__columns.get())
         self.file_manager_operative.save_rows_columns(self.__rows_columns)
-        self.file_manager_operative.save_find_shorthand_matches(self.__find_shorthand_matches.get())
         ignore = []
         ignore = self.file_manager_operative.load_ignore()
         self.file_manager_operative.clear_storage()
@@ -92,9 +86,7 @@ class main_window:
                 self.file_manager_operative.clear_batches()
                 self.file_manager_operative.clear_results()
             else:
-                line_thickness = self.file_manager_operative.load_line_thickness()
-                find_shorthand_matches = self.file_manager_operative.load_find_shorthand_matches()
-                predictions = self.predict_operative.get_predictions(cells, int(line_thickness), int(find_shorthand_matches), False)
+                predictions = self.predict_operative.get_predictions(cells, False)
                 
             if predictions:
                 self.table_display_window.run(predictions, int(self.__columns.get()))
@@ -130,11 +122,6 @@ class main_window:
         self.__row_column_frame.columnconfigure(1, weight=1)
         self.__row_column_frame.grid(row=2, column=0, sticky='nsew')
 
-        self.__line_thickness_frame = tk.Frame(self.root)
-        self.__line_thickness_frame.rowconfigure(0, weight=1)
-        self.__line_thickness_frame.columnconfigure(0, weight=1)
-        self.__line_thickness_frame.grid(row=3, column=0, sticky='nsew')
-
         self.__generate_frame = tk.Frame(self.root)
         self.__generate_frame.rowconfigure(0, weight=1)
         self.__generate_frame.columnconfigure(0, weight=1)
@@ -160,25 +147,8 @@ class main_window:
         tk.Label(self.__row_column_frame, text="Columns in Table:", font=("Arial", 15)).grid(row=0, column=1, pady=5, padx=15)
         tk.Spinbox(self.__row_column_frame, from_=1, to=100, increment=1.0, textvariable=self.__rows, font=("Arial", 15), state='readonly').grid(row=1, column=0, pady=5, padx=15)
         tk.Spinbox(self.__row_column_frame, from_=1, to=100, increment=1.0, textvariable=self.__columns, font=("Arial", 15), state='readonly').grid(row=1, column=1, pady=5, padx=15)
-
-        self.__line_thickness = tk.StringVar(self.root, self.file_manager_operative.load_line_thickness())
-        ttk.Separator(self.__line_thickness_frame, orient='horizontal').pack(fill='x')
-        tk.Label(self.__line_thickness_frame, text="Handwriting Thickness", font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
         
-        values = {"Thin" : "2",
-                  "Normal" : "3",
-                  "Thick" : "4"}
-
-        for text, value in values.items():
-            tk.Radiobutton(self.__line_thickness_frame, text=text, variable=self.__line_thickness, value=value, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
-
-        ttk.Separator(self.__line_thickness_frame, orient='horizontal').pack(fill='x')
-        self.__find_shorthand_matches = tk.IntVar(self.root, self.file_manager_operative.load_find_shorthand_matches())
-        tk.Checkbutton(self.__line_thickness_frame, text="Find shorthand matches", variable=self.__find_shorthand_matches, onvalue=1, offvalue=0, font=("Arial", 15)).pack(side=tk.TOP, ipady=5)
-
-        ttk.Separator(self.__line_thickness_frame, orient='horizontal').pack(fill='x')
-        
-        tk.Button(self.__generate_frame, text="Generate Tables", font=("Arial", 15), command=self.__generate_table).grid(row=0, column=0, pady=5, padx=5)
+        tk.Button(self.__generate_frame, text="Generate Tables", font=("Arial", 15), command=self.__generate_table).grid(row=0, column=0, pady=20, padx=5)
                          
         self.root.protocol("WM_DELETE_WINDOW", self.__close)
         self.root.mainloop()

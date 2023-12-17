@@ -89,7 +89,7 @@ class ConnCompBtrMorph:
 
     def get_letters(self, img, line_thickness, analyzed_cell_directory):
         x_tolerance = 20
-        y_tolerance = 20
+        y_tolerance = 30
         letters = []
         image_orig = cv2.imread(img)
         box_shrink = 2

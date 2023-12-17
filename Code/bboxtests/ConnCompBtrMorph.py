@@ -32,12 +32,64 @@ class ConnCompBtrMorph:
         vline = cv2.erode(img, vkernel, iterations=1)
         img = img - vline
         return img
+    
+    def _check_node_connections(self, node, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance):
+        node_bounding_box, node_centroid = node
+        index = 0
+        for component in components:
+            if index not in analyzed_component_ids:
+                bounding_box, centroid = component
+                x_node, y_node = node_centroid
+                x_component, y_component = centroid
+                if (abs(x_node - x_component) < x_tolerance) and (abs(y_node - y_component) < y_tolerance):
+                    grouped_components.append(component)
+                    analyzed_component_ids.append(index)
+                    grouped_components, analyzed_component_ids = self._check_node_connections(component, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance)
+            index = index + 1
+
+        return grouped_components, analyzed_component_ids
+        
+    def _combine_components(self, bounding_boxes, centroids, x_tolerance, y_tolerance):
+        updated_components = []
+        component_subgroup = []
+        analyzed_component_ids = []
+        index = 0
+        components = tuple(zip(bounding_boxes, centroids))
+        for component in components:
+            if index not in analyzed_component_ids:
+                component_subgroup.append(component)
+                analyzed_component_ids.append(index)
+                component_subgroup, analyzed_component_ids = self._check_node_connections(component, components, component_subgroup, analyzed_component_ids, x_tolerance, y_tolerance)
+                updated_components.append(component_subgroup)
+                component_subgroup = []
+            index = index + 1
+            
+        x1_group = []
+        x2_group = []
+        y1_group = []
+        y2_group = []
+        updated_bounding_boxes = []
+        for subgroup in updated_components:
+            for bounding_box, centroid in subgroup:
+                x1, y1, x2, y2 = bounding_box
+                x1_group.append(x1)
+                x2_group.append(x2)
+                y1_group.append(y1)
+                y2_group.append(y2)
+            updated_bounding_boxes.append([min(x1_group), min(y1_group), max(x2_group), max(y2_group)])
+            x1_group = []
+            x2_group = []
+            y1_group = []
+            y2_group = []
+        return updated_bounding_boxes
 
     def _sort_bounding_boxes(self, bounding_boxes):
         sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
         return sorted_bounding_boxes
 
     def get_letters(self, img, line_thickness, analyzed_cell_directory):
+        x_tolerance = 20
+        y_tolerance = 20
         letters = []
         image_orig = cv2.imread(img)
         box_shrink = 2
@@ -49,36 +101,37 @@ class ConnCompBtrMorph:
         image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8), iterations=1)
         image_bin = skimage.morphology.area_opening(image_bin)
         bounding_boxes = []
+        centroids = []
         analysis = cv2.connectedComponentsWithStats(image_bin, 4, cv2.CV_32S)
         (totalLabels, label_ids, values, centroid) = analysis
+        
         # Loop through each component
         new_img = image_orig.copy()
         for i in range(1, totalLabels):
 
             # Area of the component
             area = values[i, cv2.CC_STAT_AREA]
-            if (area > 100):
+            if (area > 75):
                 # Now extract the coordinate points
                 x1 = values[i, cv2.CC_STAT_LEFT]
                 y1 = values[i, cv2.CC_STAT_TOP]
                 w = values[i, cv2.CC_STAT_WIDTH]
                 h = values[i, cv2.CC_STAT_HEIGHT]
 
-                bounding_boxes.append([x1, y1, w, h])
-
-                # Coordinate of the bounding box
-                pt1 = (x1, y1)
-                pt2 = (x1 + w, y1 + h)
-
-                # Bounding boxes for each component
-                cv2.rectangle(new_img, pt1, pt2, (0, 255, 0), 3)
+                x2 = x1 + w
+                y2 = y1 + h
+                xc, yc = centroid[i]
+                bounding_boxes.append([x1, y1, x2, y2])
+                centroids.append([xc, yc])
 
         if len(bounding_boxes) > 0:
+            bounding_boxes = self._combine_components(bounding_boxes, centroids, x_tolerance, y_tolerance)
             bounding_boxes = self._sort_bounding_boxes(bounding_boxes)
             box_expand = 5
             for box in bounding_boxes:
-                (x, y, w, h) = box
-                roi = image_gray[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
+                (x1, y1, x2, y2) = box
+                cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
+                roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
                 image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
                 try:
                     image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)

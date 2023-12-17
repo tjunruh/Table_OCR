@@ -1,0 +1,136 @@
+contours method:
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+commit 21b59f7cd43854d5caf24def5bb7ea8748b4799a
+┌───────────┬──────────┐
+│   Precision   │   0.963135   │
+├───────────┼──────────┤
+│   Recall      │   0.904695   │
+├───────────┼──────────┤
+│   F1 Score    │   0.933001   │
+└───────────┴──────────┘
+
+PDFs:
+
+Bay
+Blue_Gazzi_LLC
+Bob_Pickerill
+Cayd_Walljasper
+Corey_Wise
+Don_McNally
+First State Bank
+George Somerfeld
+Jeremy Teel
+Joshua Powell
+Kaiser Trust
+Kevin Herrmann
+Kyle Kinczewski
+Mary Butterfield
+Owen Finch
+Robin Vanhorn Trust
+Rose Graves
+Todd Harrison
+Wolf
+===============================================================================================================================================================
+connected components method:
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+commit ae96664023f362824eb8ef8050398faae7a39c08
+┌───────────┬──────────┐
+│   Precision   │   0.977531   │
+├───────────┼──────────┤
+│   Recall      │   0.981479   │
+├───────────┼──────────┤
+│   F1 Score    │   0.979501   │
+└───────────┴──────────┘
+
+PDFs:
+
+Bay
+Blue_Gazzi_LLC
+Bob_Pickerill
+Cayd_Walljasper
+Corey_Wise
+Don_McNally
+First State Bank
+George Somerfeld
+Jeremy Teel
+Joshua Powell
+Kaiser Trust
+Kevin Herrmann
+Kyle Kinczewski
+Mary Butterfield
+Owen Finch
+Robin Vanhorn Trust
+Rose Graves
+Todd Harrison
+Wolf
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+commit 21b59f7cd43854d5caf24def5bb7ea8748b4799a
+┌───────────┬──────────┐
+│   Precision   │   0.954915   │
+├───────────┼──────────┤
+│   Recall      │   0.951490   │
+├───────────┼──────────┤
+│   F1 Score    │   0.953199   │
+└───────────┴──────────┘
+
+PDFs:
+
+Bay
+Blue_Gazzi_LLC
+Bob_Pickerill
+Cayd_Walljasper
+Corey_Wise
+Don_McNally
+First State Bank
+George Somerfeld
+Jeremy Teel
+Joshua Powell
+Kaiser Trust
+Kevin Herrmann
+Kyle Kinczewski
+Mary Butterfield
+Owen Finch
+Robin Vanhorn Trust
+Rose Graves
+Todd Harrison
+Wolf
+
+===============================================================================================================================================================
+xy split method:
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+commit 21b59f7cd43854d5caf24def5bb7ea8748b4799a
+┌───────────┬──────────┐
+│   Precision   │   0.941904   │
+├───────────┼──────────┤
+│   Recall      │   0.938231   │
+├───────────┼──────────┤
+│   F1 Score    │   0.940064   │
+└───────────┴──────────┘
+
+PDFs:
+
+Bay
+Blue_Gazzi_LLC
+Bob_Pickerill
+Cayd_Walljasper
+Corey_Wise
+Don_McNally
+First State Bank
+George Somerfeld
+Jeremy Teel
+Joshua Powell
+Kaiser Trust
+Kevin Herrmann
+Kyle Kinczewski
+Mary Butterfield
+Owen Finch
+Robin Vanhorn Trust
+Rose Graves
+Todd Harrison
+Wolf
+
+===============================================================================================================================================================

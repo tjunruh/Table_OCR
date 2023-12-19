@@ -28,10 +28,21 @@ class short_to_long:
                     
             elif self.number_of_letters(predictions[i]) > 1:
                 predictions[i] = predictions[i].replace('5', 'S')
-                
+  
             if predictions[i] in string_set:
                 predictions[i] = string_set[predictions[i]]
-                        
+            elif ',' in predictions[i]:
+                words = predictions[i].split(',')
+                expanded_words = ''
+                for j in range(len(words)):
+                    if words[j] in string_set:
+                        expanded_words = expanded_words + string_set[words[j]]
+                    else:
+                        expanded_words = expanded_words + words[j]
+
+                    if j < (len(words) - 1):
+                        expanded_words = expanded_words + ', ' 
+                predictions[i] = expanded_words
             for key, value in char_set.items():
                 if predictions[i].find(key) != -1:
                     predictions[i] = predictions[i].replace(key, value)
@@ -60,7 +71,7 @@ class short_to_long:
         if word in string_set:
             word = string_set[word]
         elif word.find(',') != -1:
-            word = word.replace(' ', '')
+            word = word.replace(', ', ',')
             words = []
             words = word.split(',')
             word = ''

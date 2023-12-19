@@ -47,6 +47,8 @@ class short_to_long:
                 if predictions[i].find(key) != -1:
                     predictions[i] = predictions[i].replace(key, value)
 
+        predictions = self.expand_dashes(predictions)
+
         return predictions
 
     def in_short(self, prediction):
@@ -103,3 +105,19 @@ class short_to_long:
 
         return letters
         
+    def expand_dashes(self, predictions):
+        rows_columns = []
+        rows_columns = self.file_manager_operative.load_rows_columns()
+        columns = int(rows_columns[1])
+        for i in range(len(predictions)):
+            if predictions[i] == '1' or predictions[i] == 'I':
+                j = i - columns
+                while j > 0:
+                    cell_above = predictions[j]
+                    if cell_above != '1' and cell_above != 'i':
+                        predictions[i] = cell_above
+                        break
+                    j = j - columns
+        return predictions
+                
+                

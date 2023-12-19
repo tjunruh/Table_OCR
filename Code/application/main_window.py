@@ -5,6 +5,7 @@ from edit_shorthand import edit_shorthand
 from default_directory import default_directory
 from table_display import table_display
 from table_extractor import table_extractor
+from short_to_long import short_to_long
 from predict import predict
 from tkinter import filedialog
 from tkinter import ttk
@@ -22,6 +23,7 @@ class main_window:
     table_display_window = table_display()
     file_manager_operative = file_manager()
     predict_operative = predict()
+    short_to_long_operative = short_to_long()
     root = None
     __select_file_frame = None
     __display_file_frame = None
@@ -89,6 +91,7 @@ class main_window:
                 predictions = self.predict_operative.get_predictions(cells, False)
                 
             if predictions:
+                predictions = self.short_to_long_operative.short_to_long(predictions)
                 self.table_display_window.run(predictions, int(self.__columns.get()))
      
     def run(self):    

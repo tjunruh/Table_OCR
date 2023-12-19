@@ -4,14 +4,12 @@ from file_manager import file_manager
 from sklearn.preprocessing import LabelBinarizer
 import imutils
 import numpy as np
-from short_to_long import short_to_long
 import time
 from multiprocessing import Pool, cpu_count, Value
 import skimage
 
 class predict:
     file_manager_operative = file_manager()
-    short_to_long_operative = short_to_long()
     __model = None
     __LB = None
 
@@ -200,8 +198,6 @@ class predict:
             predictions.append(word)
             if multiprocessing:
                 m_job_num.value += 1
-
-        predictions = self.short_to_long_operative.short_to_long(predictions)
         return predictions
 
     def run_batch_predictions(self, batch_num):

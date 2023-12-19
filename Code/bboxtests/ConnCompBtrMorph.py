@@ -32,6 +32,9 @@ class ConnCompBtrMorph:
         vline = cv2.erode(img, vkernel, iterations=1)
         img = img - vline
         return img
+    def _sort_bounding_boxes(self, bounding_boxes):
+        sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
+        return sorted_bounding_boxes
     
     def _check_node_connections(self, node, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance):
         node_bounding_box, node_centroid = node
@@ -49,7 +52,7 @@ class ConnCompBtrMorph:
 
         return grouped_components, analyzed_component_ids
         
-    def _combine_components(self, bounding_boxes, centroids, x_tolerance, y_tolerance):
+    def _group_components(self, bounding_boxes, centroids, x_tolerance, y_tolerance):
         updated_components = []
         component_subgroup = []
         analyzed_component_ids = []
@@ -63,31 +66,60 @@ class ConnCompBtrMorph:
                 updated_components.append(component_subgroup)
                 component_subgroup = []
             index = index + 1
-            
+        return updated_components
+
+    def _multiple_lines(self, centroids, y_tolerance):
+        y_points = []
+        multiple_lines = False
+        for x, y in centroids:
+            y_points.append(y)
+        if (max(y_points) - min(y_points)) > y_tolerance:
+            multiple_lines = True
+        return multiple_lines
+
+    def _merge_groups(self, grouped_components):  
         x1_group = []
         x2_group = []
         y1_group = []
         y2_group = []
+        centroid_group = []
         updated_bounding_boxes = []
-        for subgroup in updated_components:
+        updated_centroids = []
+        for subgroup in grouped_components:
             for bounding_box, centroid in subgroup:
                 x1, y1, x2, y2 = bounding_box
                 x1_group.append(x1)
                 x2_group.append(x2)
                 y1_group.append(y1)
                 y2_group.append(y2)
-            updated_bounding_boxes.append([min(x1_group), min(y1_group), max(x2_group), max(y2_group)])
+            x1 = min(x1_group)
+            x2 = max(x2_group)
+            y1 = min(y1_group)
+            y2 = max(y2_group)
+            updated_bounding_boxes.append([x1, y1, x2, y2])
+            updated_centroids.append([int(x1 + ((x2 - x1)/2)), int(y1 + ((y2 - y1)/2))])
             x1_group = []
             x2_group = []
             y1_group = []
             y2_group = []
+        return updated_bounding_boxes, updated_centroids
+
+    def _separate_groups(self, grouped_components):
+        updated_bounding_boxes = []
+        updated_bounding_boxes_subgroup = []
+        i = 0
+        for subgroup in grouped_components:
+            if i > 0:
+                updated_bounding_boxes.append(',')
+            for bounding_box, centroid in subgroup:
+                updated_bounding_boxes_subgroup.append(bounding_box)
+            updated_bounding_boxes_subgroup = self._sort_bounding_boxes(updated_bounding_boxes_subgroup)
+            updated_bounding_boxes.extend(updated_bounding_boxes_subgroup)
+            updated_bounding_boxes_subgroup = []
+            i = i + 1
         return updated_bounding_boxes
-
-    def _sort_bounding_boxes(self, bounding_boxes):
-        sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
-        return sorted_bounding_boxes
-
-    def get_letters(self, img, line_thickness, analyzed_cell_directory):
+        
+    def get_letters(self, img, line_thicknes, analyzed_cell_directory):
         x_tolerance = 20
         y_tolerance = 30
         letters = []
@@ -125,31 +157,40 @@ class ConnCompBtrMorph:
                 centroids.append([xc, yc])
 
         if len(bounding_boxes) > 0:
-            bounding_boxes = self._combine_components(bounding_boxes, centroids, x_tolerance, y_tolerance)
-            bounding_boxes = self._sort_bounding_boxes(bounding_boxes)
+            grouped_components = self._group_components(bounding_boxes, centroids, x_tolerance, y_tolerance)
+            bounding_boxes, centroids = self._merge_groups(grouped_components)
+            if self._multiple_lines(centroids, 25):
+                grouped_components = self._group_components(bounding_boxes, centroids, 2000, 25)
+                bounding_boxes = self._separate_groups(grouped_components)
+            else:
+                bounding_boxes = self._sort_bounding_boxes(bounding_boxes)
             box_expand = 5
             i = 0
             while i < len(bounding_boxes):
-                (x1, y1, x2, y2) = bounding_boxes[i]
-                cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
-                roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
-                image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-                try:
-                    image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)
-                    image_bin = image_bin.astype("float32") / 255.0
-                    image_bin = np.expand_dims(image_bin, axis=-1)
-                    image_bin = image_bin.reshape(1, 32, 32, 1)
-                    ypred = self._model.predict(image_bin, verbose=0)
-                    ypred = self._LB.inverse_transform(ypred)
-                    [x] = self._hex_to_char(ypred)
-                    letters.append(x)
-                    i = i + 1
-                    box_expand = 5
-                except Exception as e:
-                    if box_expand > 0:
-                        box_expand = box_expand - 1
-                    else:
+                if bounding_boxes[i] != ',':
+                    (x1, y1, x2, y2) = bounding_boxes[i]
+                    cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
+                    roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
+                    image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+                    try:
+                        image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)
+                        image_bin = image_bin.astype("float32") / 255.0
+                        image_bin = np.expand_dims(image_bin, axis=-1)
+                        image_bin = image_bin.reshape(1, 32, 32, 1)
+                        ypred = self._model.predict(image_bin, verbose=0)
+                        ypred = self._LB.inverse_transform(ypred)
+                        [x] = self._hex_to_char(ypred)
+                        letters.append(x)
                         i = i + 1
-            cv2.imwrite(str(analyzed_cell_directory + "/" + os.path.basename(img)), new_img)
+                        box_expand = 5
+                    except Exception as e:
+                        if box_expand > 0:
+                            box_expand = box_expand - 1
+                        else:
+                            i = i + 1
+                else:
+                    letters.append(',')
+                    i = i + 1
+        cv2.imwrite(str(analyzed_cell_directory + "/" + os.path.basename(img)), new_img)
         return letters
 

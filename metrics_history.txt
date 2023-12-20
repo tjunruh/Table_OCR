@@ -35,6 +35,38 @@ Wolf
 connected components method:
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+commit 47a73999ea326c55f07497c4c333fa251c6c3c2c
+┌───────────┬──────────┐
+│ Precision │ 0.986055 │
+├───────────┼──────────┤
+│ Recall    │ 0.984682 │
+├───────────┼──────────┤
+│ F1 Score  │ 0.985368 │
+└───────────┴──────────┘
+
+PDFs:
+
+Bay
+Blue_Gazzi_LLC
+Bob_Pickerill
+Cayd_Walljasper
+Corey_Wise
+Don_McNally
+First State Bank
+George Somerfeld
+Jeremy Teel
+Joshua Powell
+Kaiser Trust
+Kevin Herrmann
+Kyle Kinczewski
+Mary Butterfield
+Owen Finch
+Robin Vanhorn Trust
+Rose Graves
+Todd Harrison
+Wolf
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
 commit dfd851620a8a338266f17de45e6e79b80ce3b883
 ┌───────────┬──────────┐
 │ Precision │ 0.98536  │

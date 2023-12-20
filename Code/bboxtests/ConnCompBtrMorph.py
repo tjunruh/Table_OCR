@@ -128,7 +128,9 @@ class ConnCompBtrMorph:
         h, w, c = image_orig.shape
         image_orig = image_orig[(box_shrink):(h - box_shrink), (box_shrink):(w - box_shrink)]
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
-        _, image_bin = cv2.threshold(image_gray, 127, 255, cv2.THRESH_BINARY_INV)
+        threshold_level, image_bin = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        if threshold_level > 225:
+            threshold_level, image_bin = cv2.threshold(image_gray, 225, 255, cv2.THRESH_BINARY_INV)
         image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8), iterations=1)
         image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8), iterations=1)
         image_bin = skimage.morphology.area_opening(image_bin)

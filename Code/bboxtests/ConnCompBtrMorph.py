@@ -10,33 +10,26 @@ from file_manager import file_manager
 import cv2
 import numpy as np
 import os
+import time
 
 class ConnCompBtrMorph:
     file_manager_operative = file_manager()
-    _model = None
-    _LB = None
+    __model = None
+    __LB = None
 
     def __init__(self):
-        self._LB = self.file_manager_operative.load_LabelBinarizer()
-        self._model = self.file_manager_operative.load_ocr_model()
+        self.__LB = self.file_manager_operative.load_LabelBinarizer()
+        self.__model = self.file_manager_operative.load_ocr_model()
 
-    def _hex_to_char(self, hex_input):
+    def __hex_to_char(self, hex_input):
         return(chr(int(hex_input[0], 16)))
-    
-    @staticmethod
-    def remove_lines(img):
-        hkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
-        hline = cv2.erode(img, hkernel, iterations=1)
-        img = img - hline
-        vkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 25))
-        vline = cv2.erode(img, vkernel, iterations=1)
-        img = img - vline
-        return img
-    def _sort_bounding_boxes(self, bounding_boxes):
+
+    def __sort_bounding_boxes(self, bounding_boxes):
         sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
         return sorted_bounding_boxes
-    
-    def _check_node_connections(self, node, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance):
+
+
+    def __check_node_connections(self, node, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance):
         node_bounding_box, node_centroid = node
         index = 0
         for component in components:
@@ -47,12 +40,12 @@ class ConnCompBtrMorph:
                 if (abs(x_node - x_component) < x_tolerance) and (abs(y_node - y_component) < y_tolerance):
                     grouped_components.append(component)
                     analyzed_component_ids.append(index)
-                    grouped_components, analyzed_component_ids = self._check_node_connections(component, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance)
+                    grouped_components, analyzed_component_ids = self.__check_node_connections(component, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance)
             index = index + 1
 
         return grouped_components, analyzed_component_ids
         
-    def _group_components(self, bounding_boxes, centroids, x_tolerance, y_tolerance):
+    def __group_components(self, bounding_boxes, centroids, x_tolerance, y_tolerance):
         updated_components = []
         component_subgroup = []
         analyzed_component_ids = []
@@ -62,13 +55,13 @@ class ConnCompBtrMorph:
             if index not in analyzed_component_ids:
                 component_subgroup.append(component)
                 analyzed_component_ids.append(index)
-                component_subgroup, analyzed_component_ids = self._check_node_connections(component, components, component_subgroup, analyzed_component_ids, x_tolerance, y_tolerance)
+                component_subgroup, analyzed_component_ids = self.__check_node_connections(component, components, component_subgroup, analyzed_component_ids, x_tolerance, y_tolerance)
                 updated_components.append(component_subgroup)
                 component_subgroup = []
             index = index + 1
         return updated_components
 
-    def _multiple_lines(self, centroids, y_tolerance):
+    def __multiple_lines(self, centroids, y_tolerance):
         y_points = []
         multiple_lines = False
         for x, y in centroids:
@@ -77,7 +70,7 @@ class ConnCompBtrMorph:
             multiple_lines = True
         return multiple_lines
 
-    def _merge_groups(self, grouped_components):  
+    def __merge_groups(self, grouped_components):  
         x1_group = []
         x2_group = []
         y1_group = []
@@ -104,7 +97,7 @@ class ConnCompBtrMorph:
             y2_group = []
         return updated_bounding_boxes, updated_centroids
 
-    def _separate_groups(self, grouped_components):
+    def __separate_groups(self, grouped_components):
         updated_bounding_boxes = []
         updated_bounding_boxes_subgroup = []
         i = 0
@@ -113,13 +106,13 @@ class ConnCompBtrMorph:
                 updated_bounding_boxes.append(',')
             for bounding_box, centroid in subgroup:
                 updated_bounding_boxes_subgroup.append(bounding_box)
-            updated_bounding_boxes_subgroup = self._sort_bounding_boxes(updated_bounding_boxes_subgroup)
+            updated_bounding_boxes_subgroup = self.__sort_bounding_boxes(updated_bounding_boxes_subgroup)
             updated_bounding_boxes.extend(updated_bounding_boxes_subgroup)
             updated_bounding_boxes_subgroup = []
             i = i + 1
         return updated_bounding_boxes
         
-    def get_letters(self, img, line_thicknes, analyzed_cell_directory):
+    def get_letters(self, img, analyzed_cell_directory):
         x_tolerance = 20
         y_tolerance = 30
         letters = []
@@ -159,13 +152,13 @@ class ConnCompBtrMorph:
                 centroids.append([xc, yc])
 
         if len(bounding_boxes) > 0:
-            grouped_components = self._group_components(bounding_boxes, centroids, x_tolerance, y_tolerance)
-            bounding_boxes, centroids = self._merge_groups(grouped_components)
-            if self._multiple_lines(centroids, 25):
-                grouped_components = self._group_components(bounding_boxes, centroids, 2000, 25)
-                bounding_boxes = self._separate_groups(grouped_components)
+            grouped_components = self.__group_components(bounding_boxes, centroids, x_tolerance, y_tolerance)
+            bounding_boxes, centroids = self.__merge_groups(grouped_components)
+            if self.__multiple_lines(centroids, 25):
+                grouped_components = self.__group_components(bounding_boxes, centroids, 2000, 25)
+                bounding_boxes = self.__separate_groups(grouped_components)
             else:
-                bounding_boxes = self._sort_bounding_boxes(bounding_boxes)
+                bounding_boxes = self.__sort_bounding_boxes(bounding_boxes)
             box_expand = 5
             i = 0
             while i < len(bounding_boxes):
@@ -179,9 +172,9 @@ class ConnCompBtrMorph:
                         image_bin = image_bin.astype("float32") / 255.0
                         image_bin = np.expand_dims(image_bin, axis=-1)
                         image_bin = image_bin.reshape(1, 32, 32, 1)
-                        ypred = self._model.predict(image_bin, verbose=0)
-                        ypred = self._LB.inverse_transform(ypred)
-                        [x] = self._hex_to_char(ypred)
+                        ypred = self.__model.predict(image_bin, verbose=0)
+                        ypred = self.__LB.inverse_transform(ypred)
+                        [x] = self.__hex_to_char(ypred)
                         letters.append(x)
                         i = i + 1
                         box_expand = 5

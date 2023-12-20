@@ -99,14 +99,13 @@ def bboxbenchmark(predict_class, root_dir):
     analyzed_cells_directory = str(root_dir) + "/analyzed_cells"
     if not os.path.isdir(analyzed_cells_directory):
         os.mkdir(analyzed_cells_directory)
-    p = predict_class()
     results = {}
     for img, label in labels.items():
         img_path = str(root_dir / img)
-        pred = "".join(p.get_letters(img_path, 2, analyzed_cells_directory)).lower()
+        pred = "".join(predict_class.get_letters(img_path, analyzed_cells_directory)).lower()
         results[img] = [pred, *benchmark(label, pred)]
     last_dir = os.path.basename(os.path.normpath(str(root_dir)))
-    result_file_name = predict_class.__name__ + "_" + last_dir + ".csv"
+    result_file_name = "Vanilla_" + last_dir + ".csv"
     result_file_path = root_dir / last_dir
     result_file_path = root_dir / result_file_name
     with open(str(result_file_path), "w+") as f:

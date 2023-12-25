@@ -7,6 +7,8 @@ import sys
 import shutil
 from tensorflow.keras.models import load_model
 from pathlib import Path
+import csv
+import cv2
 
 class file_manager:
     def __init__(self):
@@ -19,7 +21,10 @@ class file_manager:
             self.batches_path,
             self.predictions_path,
             self.storage_path,
-            self.page_path
+            self.page_path,
+            self.bounding_boxes_path,
+            self.training_path,
+            self.testing_info_path
         ):
             p.mkdir(parents=True, exist_ok=True)
 
@@ -44,6 +49,18 @@ class file_manager:
     @property
     def page_path(self) -> Path:
         return self.parent_dir / "Pages"
+
+    @property
+    def bounding_boxes_path(self) -> Path:
+        return self.parent_dir / "Bounding_Boxes"
+
+    @property
+    def training_path(self) -> Path:
+        return self.parent_dir / "Training"
+
+    @property
+    def testing_info_path(self) -> Path:
+        return self.parent_dir / "Labels"
 
     def save_shorthand(self, shorthand):
         path = self.settings_path / 'shorthand.pkl'
@@ -134,9 +151,34 @@ class file_manager:
                 predictions = pickle.load(result_load)
 
         return predictions
-
+    
     def clear_results(self):
         folder = self.predictions_path
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+    def save_bounding_boxes(self, bounding_boxes, result_num):
+        path = self.bounding_boxes_path / f"bounding_boxes_{result_num}"
+        pickle.dump(bounding_boxes, open(path, 'wb+'))
+
+    def load_bounding_boxes(self, result_num):
+        bounding_boxes = []
+        path = self.bounding_boxes_path / f"bounding_boxes_{result_num}"
+        if(os.path.isfile(path)):
+            with open(path, 'rb') as bounding_boxes_load:
+                bounding_boxes = pickle.load(bounding_boxes_load)
+
+        return bounding_boxes
+
+    def clear_bounding_boxes(self):
+        folder = self.bounding_boxes_path
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
@@ -174,34 +216,50 @@ class file_manager:
             
     def get_storage(self):
         folder = self.storage_path
-        filenames = self.sort_storage([f for f in folder.iterdir()])
+        filenames = self.sort_cells([f for f in folder.iterdir()])
         return [str(f) for f in filenames]
 
-    def sort_storage(self, filenames: Iterable[Path]):
+    def get_storage_single(self, image_num):
+        folder = self.storage_path
+        file_path = ''
+        for filename in os.listdir(folder):
+            if filename == str(image_num) + ".jpg":
+                file_path = os.path.join(folder, filename)
+                break
+        return file_path
+            
+    def sort_cells(self, filenames: Iterable[Path]):
         return sorted(filenames,
                key=lambda f: int(f.stem))
 
-    def delete_ignored_rows(self):
-        ignore = []
-        ignore = self.load_ignore()
-        rows_columns = []
-        rows_columns = self.load_rows_columns()
-        for page, row in ignore:
-            start_cell = (int(page) - 1)*int(rows_columns[0])*int(rows_columns[1]) + (int(row) - 1)*int(rows_columns[1])
-            stop_cell = start_cell + int(rows_columns[1])
-            self.delete_cells_in_range(start_cell, stop_cell)
+    def get_training_images(self):
+        folder = self.training_path
+        filenames = self.sort_cells([f for f in folder.iterdir()])
+        return [str(f) for f in filenames]
 
-    def delete_cells_in_range(self, start_cell, stop_cell):
-        folder = self.storage_path
-        for i in range(start_cell, stop_cell):
-            filename = str(i) + ".jpg"
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
+    def get_number_of_training_images(self):
+        folder = self.training_path
+        number_of_images = len([f for f in folder.iterdir()])
+        return int(number_of_images)
 
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+    def save_training_image(self, image_num, label, bounding_boxes):
+        image_path = self.get_storage_single(image_num)
+        image = cv2.imread(image_path)
+        training_image_name = (str(self.get_number_of_training_images() + 1) + ".jpg")
+        training_bounding_boxes_name = (str(self.get_number_of_training_images() + 1) + ".pkl")
+        training_image_path = str(self.training_path) + "/" + training_image_name
+        training_bounding_boxes_path = str(self.testing_info_path) + "/" + training_bounding_boxes_name 
+        cv2.imwrite(training_image_path, image)
+        labels_file = self.testing_info_path / "labels.csv"
+
+        if labels_file.exists():
+            with labels_file.open("a") as f:
+                writer = csv.writer(f)
+                writer.writerow([training_image_name, label])
+        else:
+            with labels_file.open("w+") as f:
+                writer = csv.writer(f)
+                writer.writerow([training_image_name, label])
+
+        pickle.dump(bounding_boxes, open(training_bounding_boxes_path, 'wb+'))
         

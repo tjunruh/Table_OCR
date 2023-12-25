@@ -84,6 +84,21 @@ class table_extractor:
             boxes.extend(grabbed_section)
         return boxes
 
+    def __remove_ignored_rows(self, boxes):
+        ignore = []
+        ignore = self.file_manager_operative.load_ignore()
+        rows_columns = []
+        rows_columns = self.file_manager_operative.load_rows_columns()
+        for page, row in ignore:
+            start_cell = (int(page) - 1)*int(rows_columns[0])*int(rows_columns[1]) + (int(row) - 1)*int(rows_columns[1])
+            stop_cell = start_cell + int(rows_columns[1])
+            self.__remove_ignored_rows_in_range(boxes, start_cell, stop_cell)
+        return boxes
+
+    def __remove_ignored_rows_in_range(self, boxes, start_cell, stop_cell):
+        del boxes[start_cell:stop_cell]
+        return boxes
+
     def __save_boxes(self, boxes, img):
         for box in boxes:
             x, y, w, h = box
@@ -105,6 +120,7 @@ class table_extractor:
                 vertical_horizontal_lines = self.__get_vertical_horizontal_lines(vertical_lines, horizontal_lines)
                 boundingBoxes = self.__get_boundingBoxes(vertical_horizontal_lines)
                 boxes = self.__sort_boundingBoxes(boundingBoxes)
+                boxes = self.__remove_ignored_rows(boxes)
                 self.__save_boxes(boxes, img)
             return 0
         else:

@@ -179,7 +179,7 @@ class predict:
                     letters.append(',')
                     i = i + 1
         cv2.imwrite(img, new_img)
-        return letters
+        return letters, bounding_boxes
 
     def __get_word(self, letters):
         word = ""
@@ -193,19 +193,22 @@ class predict:
         self.__LB = self.file_manager_operative.load_LabelBinarizer()
         self.__model = self.file_manager_operative.load_ocr_model()
         predictions = []
+        bounding_boxes = []
         default_word = ''
         for cell in cells:
-            letters = self.__get_letters(cell)
+            letters, cell_bounding_boxes = self.__get_letters(cell)
             word = self.__get_word(letters)
             predictions.append(word)
+            bounding_boxes.append(cell_bounding_boxes)
             if multiprocessing:
                 m_job_num.value += 1
-        return predictions
+        return predictions, bounding_boxes
 
     def run_batch_predictions(self, batch_num):
         cells = self.file_manager_operative.load_batch(batch_num)
-        predictions = self.get_predictions(cells, True)
+        predictions, bounding_boxes = self.get_predictions(cells, True)
         self.file_manager_operative.save_prediction_results(predictions, batch_num)
+        self.file_manager_operative.save_bounding_boxes(bounding_boxes, batch_num)
 
     def init_workers(self, job_num):
         global m_job_num

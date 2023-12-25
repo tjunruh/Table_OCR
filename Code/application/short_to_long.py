@@ -43,6 +43,7 @@ class short_to_long:
                     if j < (len(words) - 1):
                         expanded_words = expanded_words + ', ' 
                 predictions[i] = expanded_words
+
             for key, value in char_set.items():
                 if predictions[i].find(key) != -1:
                     predictions[i] = predictions[i].replace(key, value)
@@ -119,5 +120,18 @@ class short_to_long:
                         break
                     j = j - columns
         return predictions
-                
+
+    def inverse_char_set(self, word):
+        shorthand = {}
+        shorthand = self.file_manager_operative.load_shorthand()
+        char_set = {}
+        for key, value in shorthand.items():
+            if key.find('*') != -1:
+                char_set[key.replace('*', '')] = value
+
+        for key, value in char_set.items():
+            if word.find(value) != -1:
+                word = word.replace(value, key)
+
+        return word
                 

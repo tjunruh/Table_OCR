@@ -71,7 +71,6 @@ class main_window:
         ignore = self.file_manager_operative.load_ignore()
         self.file_manager_operative.clear_storage()
         if self.extract_cells_operative.extract_cells(self.__file_name, self.__convert_pdf_error) != -1:
-            self.file_manager_operative.delete_ignored_rows()
             cells = self.file_manager_operative.get_storage()
             if self.__multiprocessing:
                 cpu_num = int(cpu_count()/2)
@@ -83,16 +82,19 @@ class main_window:
                     self.file_manager_operative.save_batch(batch, batch_num)
                 self.predict_operative.run_predictions(len(cells), self.pb, self.root) 
                 predictions = []
+                bounding_boxes = []
                 for i in range(1, cpu_num+1):
                     predictions += self.file_manager_operative.load_prediction_results(i)
+                    bounding_boxes += self.file_manager_operative.load_bounding_boxes(i)
                 self.file_manager_operative.clear_batches()
                 self.file_manager_operative.clear_results()
+                self.file_manager_operative.clear_bounding_boxes()
             else:
-                predictions = self.predict_operative.get_predictions(cells, False)
+                predictions, bounding_boxes = self.predict_operative.get_predictions(cells, False)
                 
             if predictions:
-                predictions = self.short_to_long_operative.short_to_long(predictions)
-                self.table_display_window.run(predictions, int(self.__columns.get()))
+                expanded_predictions = self.short_to_long_operative.short_to_long(predictions)
+                self.table_display_window.run(expanded_predictions, int(self.__columns.get()), bounding_boxes, predictions)
      
     def run(self):    
         self.__file_name = ""

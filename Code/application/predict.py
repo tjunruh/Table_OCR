@@ -7,6 +7,7 @@ import numpy as np
 import time
 from multiprocessing import Pool, cpu_count, Value
 import skimage
+import os
 
 class predict:
     file_manager_operative = file_manager()
@@ -178,7 +179,7 @@ class predict:
                 else:
                     letters.append(',')
                     i = i + 1
-        cv2.imwrite(img, new_img)
+        self.file_manager_operative.save_processed_storage_single(new_img, os.path.basename(img).replace('.jpg', ''))
         return letters, bounding_boxes
 
     def __get_word(self, letters):

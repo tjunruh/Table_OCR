@@ -69,9 +69,10 @@ class main_window:
         self.file_manager_operative.save_rows_columns(self.__rows_columns)
         ignore = []
         ignore = self.file_manager_operative.load_ignore()
-        self.file_manager_operative.clear_storage()
+        self.file_manager_operative.clear_processed_storage()
+        self.file_manager_operative.clear_raw_storage()
         if self.extract_cells_operative.extract_cells(self.__file_name, self.__convert_pdf_error) != -1:
-            cells = self.file_manager_operative.get_storage()
+            cells = self.file_manager_operative.get_raw_storage()
             if self.__multiprocessing:
                 cpu_num = int(cpu_count()/2)
                 chunk = math.ceil(len(cells)/cpu_num)

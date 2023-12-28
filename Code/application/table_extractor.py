@@ -104,8 +104,7 @@ class table_extractor:
             x, y, w, h = box
             box_expand = 2
             roi = img[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
-            filename = self.file_manager_operative.storage_path / f'{self.__num_boxes}.jpg'
-            cv2.imwrite(str(filename), roi)
+            self.file_manager_operative.save_raw_storage_single(roi, self.__num_boxes)
             self.__num_boxes += 1
         
     def extract_cells(self, file_path, messagebox_pdf_error):

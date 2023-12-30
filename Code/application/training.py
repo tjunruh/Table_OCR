@@ -2,6 +2,7 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 from file_manager import file_manager
 import cv2
 import numpy as np
+import sys
 
 class training:
     file_manager_operative = file_manager()
@@ -45,7 +46,7 @@ class training:
                 character = cell[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
                 character = self.resize(character)
                 j = j + 1
-                cv2.imwrite('D:\cloned_repositories\Table_OCR\Test/' + str(j) + '.jpg', character)
+                self.file_manager_operative.save_training_image_output_image(character, str(j) + '.jpg')
                 characters.append(character)
         character_labels = []
         for label in image_labels:
@@ -61,13 +62,15 @@ class training:
         
 
     def run_training(self):
+        self.file_manager_operative.clear_training_output()
         train_x, train_y = self.get_data()
         model = self.file_manager_operative.load_ocr_model()
         epochs = 100
         variable = ReduceLROnPlateau(monitor='loss', factor = 0.2, patience = 2)
         early_stop = EarlyStopping(monitor='loss', patience = 3)
-        history = model.fit(train_x, train_y, epochs = epochs, callbacks=[early_stop, variable])
-        model.save('D:\cloned_repositories\Table_OCR\Test\Model/')
+        with open(str(self.file_manager_operative.training_output_path / "output.txt"), 'w') as sys.stdout:
+            history = model.fit(train_x, train_y, epochs = epochs, callbacks=[early_stop, variable])
+        self.file_manager_operative.save_ocr_model(model)
         
         
         

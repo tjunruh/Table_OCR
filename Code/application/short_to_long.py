@@ -3,7 +3,8 @@ from file_manager import file_manager
 class short_to_long:
     file_manager_operative = file_manager()
 
-    def short_to_long(self, predictions):
+    def short_to_long(self, predictions_input):
+        predictions = predictions_input.copy()
         shorthand = {}
         shorthand = self.file_manager_operative.load_shorthand()
         char_set = {}

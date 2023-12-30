@@ -9,6 +9,7 @@ from tensorflow.keras.models import load_model
 from pathlib import Path
 import csv
 import cv2
+from datetime import datetime
 
 class file_manager:
     def __init__(self):
@@ -25,9 +26,11 @@ class file_manager:
             self.page_path,
             self.bounding_boxes_path,
             self.training_path,
-            self.testing_info_path
+            self.training_info_path,
+            self.training_output_path
         ):
             p.mkdir(parents=True, exist_ok=True)
+        self.make_labels_file()
 
     @property
     def settings_path(self) -> Path:
@@ -64,8 +67,12 @@ class file_manager:
         return self.parent_dir / "Training"
 
     @property
-    def testing_info_path(self) -> Path:
+    def training_info_path(self) -> Path:
         return self.parent_dir / "Labels"
+
+    @property
+    def training_output_path(self) -> Path:
+        return self.parent_dir / "Training_Output"
 
     def save_shorthand(self, shorthand):
         path = self.settings_path / 'shorthand.pkl'
@@ -195,13 +202,13 @@ class file_manager:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
 
     def save_training_bounding_boxes(self, bounding_boxes, training_bounding_boxes_name):
-        training_bounding_boxes_path = str(self.testing_info_path) + "/" + training_bounding_boxes_name 
+        training_bounding_boxes_path = str(self.training_info_path) + "/" + training_bounding_boxes_name 
         pickle.dump(bounding_boxes, open(training_bounding_boxes_path, 'wb+'))
 
 
     def load_training_bounding_boxes(self, image_num):
         bounding_boxes = []
-        path = self.testing_info_path / f"{image_num}.pkl"
+        path = self.training_info_path / f"{image_num}.pkl"
         if(os.path.isfile(path)):
             with open(path, 'rb') as bounding_boxes_load:
                 bounding_boxes = pickle.load(bounding_boxes_load)
@@ -219,6 +226,10 @@ class file_manager:
         path = self.parent_dir / "Model"
         model = load_model(path)
         return model
+
+    def save_ocr_model(self, model):
+        path = str(self.parent_dir / "Model")
+        model.save(path)
 
     def save_raw_storage_single(self, image, image_num):
         folder = self.raw_storage_path
@@ -297,7 +308,7 @@ class file_manager:
         return int(number_of_images)
 
     def load_labels(self):
-        labels_file = self.testing_info_path / "labels.csv"
+        labels_file = self.training_info_path / "labels.csv"
         labels = []
         with labels_file.open("r") as f:
             reader = csv.reader(f)
@@ -306,7 +317,7 @@ class file_manager:
         return labels
 
     def load_approved_data(self):
-        labels_file = self.testing_info_path / "labels.csv"
+        labels_file = self.training_info_path / "labels.csv"
         image_paths = []
         image_labels = []
         image_bounding_boxes = []
@@ -319,91 +330,198 @@ class file_manager:
                         image_labels.append(row[1])
                         image_bounding_boxes.append(self.load_training_bounding_boxes(row[0].replace('.jpg', '')))
         return image_paths, image_labels, image_bounding_boxes
+
+    def get_approved_data_quantity(self):
+        labels_file = self.training_info_path / "labels.csv"
+        quantity = 0
+        with labels_file.open("r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) > 1:
+                    if row[2] == 'A':
+                        quantity = quantity + 1
+        return quantity
+
+    def load_unapproved_data(self):
+        labels_file = self.training_info_path / "labels.csv"
+        image_path = ''
+        image_label = ''
+        with labels_file.open("r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) > 1:
+                    if row[2] == 'N':
+                        image_path = str(self.training_path / row[0])
+                        image_label = row[1]
+                        break
+        return image_path, image_label
     
     def save_training_image(self, image_num, label, bounding_boxes):
         image_path = self.get_raw_storage_single(image_num)
         image = cv2.imread(image_path)
-        training_image_name = (str(self.get_number_of_training_images() + 1) + ".jpg")
-        training_bounding_boxes_name = (str(self.get_number_of_training_images() + 1) + ".pkl")
+        timestamp = self.get_timestamp()
+        training_image_name = (timestamp + ".jpg")
+        training_bounding_boxes_name = (timestamp + ".pkl")
         training_image_path = str(self.training_path) + "/" + training_image_name
         cv2.imwrite(training_image_path, image)
-        labels_file = self.testing_info_path / "labels.csv"
+        labels_file = self.training_info_path / "labels.csv"
 
         if labels_file.exists():
             with labels_file.open("a") as f:
                 writer = csv.writer(f)
                 writer.writerow([training_image_name, label, 'N'])
         else:
-            with labels_file.open("w+") as f:
+            with open(labels_file, 'w', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow([training_image_name, label, 'N'])
 
         self.save_training_bounding_boxes(bounding_boxes, training_bounding_boxes_name)
         
-    def mark_training_images_as_discarded(self, image_nums):
-        labels_file = self.testing_info_path / "labels.csv"
+    def mark_training_images_as_discarded(self, image_name):
+        labels_file = self.training_info_path / "labels.csv"
         labels = []
         with labels_file.open("r") as f:
             reader = csv.reader(f)
             for row in reader:
                 if len(row) > 1:
                     for image_num in image_nums:
-                        if row[0] == (f"{image_num}.jpg"):
+                        if row[0] == image_name:
                             row[2] = 'D'
                     labels.append(row)
 
-        with labels_file.open("w+") as f:
+        with open(labels_file, 'w', newline='') as f:
             writer = csv.writer(f)
             for label in labels:
                 writer.writerow(label)
 
-    def mark_training_image_as_discarded(self, image_num):
-        labels_file = self.testing_info_path / "labels.csv"
+    def mark_training_image_as_discarded(self, image_name):
+        labels_file = self.training_info_path / "labels.csv"
         labels = []
         with labels_file.open("r") as f:
             reader = csv.reader(f)
             for row in reader:
                 if len(row) > 1:
-                    if row[0] == (f"{image_num}.jpg"):
+                    if row[0] == image_name:
                         row[2] = 'D'
                     labels.append(row)
 
-        with labels_file.open("w+") as f:
+        with open(labels_file, 'w', newline='') as f:
             writer = csv.writer(f)
             for label in labels:
                 writer.writerow(label)
 
-    def mark_training_images_as_approved(self, image_nums):
-        labels_file = self.testing_info_path / "labels.csv"
+    def mark_training_images_as_approved(self, image_name):
+        labels_file = self.training_info_path / "labels.csv"
         labels = []
         with labels_file.open("r") as f:
             reader = csv.reader(f)
             for row in reader:
                 if len(row) > 1:
                     for image_num in image_nums:
-                        if row[0] == (f"{image_num}.jpg"):
+                        if row[0] == image_name:
                             row[2] = 'A'
                     labels.append(row)
 
-        with labels_file.open("w+") as f:
+        with open(labels_file, 'w', newline='') as f:
             writer = csv.writer(f)
             for label in labels:
                 writer.writerow(label)
 
-    def mark_training_image_as_approved(self, image_num):
-        labels_file = self.testing_info_path / "labels.csv"
+    def mark_training_image_as_approved(self, image_name):
+        labels_file = self.training_info_path / "labels.csv"
         labels = []
         with labels_file.open("r") as f:
             reader = csv.reader(f)
             for row in reader:
                 if len(row) > 1:
-                    if row[0] == f"{image_num}.jpg":
+                    if row[0] == image_name:
                         row[2] = 'A'
                     labels.append(row)
 
-        with labels_file.open("w+") as f:
+        with open(labels_file, 'w', newline='') as f:
             writer = csv.writer(f)
             for label in labels:
                 writer.writerow(label)
 
+    def delete_approved_training_images(self):
+        labels_file = self.training_info_path / "labels.csv"
+        labels = []
+        with labels_file.open("r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) > 1:
+                    if row[2] != 'A':
+                        labels.append(row)
+                    else:
+                        self.delete_training_image(row[0])
+                        self.delete_training_image(str(row[0]).replace('.jpg', '.pkl'))
+
+        with open(labels_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            for label in labels:
+                writer.writerow(label)
+                
+    def delete_discarded_training_images(self):
+        labels_file = self.training_info_path / "labels.csv"
+        labels = []
+        with labels_file.open("r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) > 1:
+                    if row[2] != 'D':
+                        labels.append(row)
+                    else:
+                        self.delete_training_image(row[0])
+                        self.delete_training_image(str(row[0]).replace('.jpg', '.pkl'))
+
+        with open(labels_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            for label in labels:
+                writer.writerow(label)
         
+    def delete_training_image(self, image_name):
+        filename = self.training_path / image_name
+        try:
+            if os.path.isfile(filename) or os.path.islink(filename):
+                os.unlink(filename)
+            elif os.path.isdir(filename):
+                shutil.rmtree(filename)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+    def delete_training_bounding_box(self, image_name):
+        filename = self.training_info_path / image_name
+        try:
+            if os.path.isfile(filename) or os.path.islink(filename):
+                os.unlink(filename)
+            elif os.path.isdir(filename):
+                shutil.rmtree(filename)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+    def get_timestamp(self):
+        timestamp = ''
+        timestamp = str(datetime.now())
+        timestamp = timestamp.replace(':', '-')
+        timestamp = timestamp.replace(' ', '_')
+        return timestamp
+
+    def save_training_image_output_image(self, image, image_name):
+        cv2.imwrite(str(self.training_output_path / image_name), image)
+
+    def clear_training_output(self):
+        folder = self.training_output_path
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+     
+    def make_labels_file(self):
+        filename = self.training_info_path / "labels.csv"
+        if not os.path.isfile(filename):
+            open(filename, 'x')

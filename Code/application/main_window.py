@@ -6,6 +6,7 @@ from default_directory import default_directory
 from table_display import table_display
 from table_extractor import table_extractor
 from short_to_long import short_to_long
+from training_interface import training_interface
 from predict import predict
 from tkinter import filedialog
 from tkinter import ttk
@@ -24,6 +25,7 @@ class main_window:
     file_manager_operative = file_manager()
     predict_operative = predict()
     short_to_long_operative = short_to_long()
+    training_interface_operative = training_interface()
     root = None
     __select_file_frame = None
     __display_file_frame = None
@@ -57,6 +59,9 @@ class main_window:
 
     def __run_default_directory(self):
         self.default_directory_window.run()
+
+    def __run_train_model(self):
+        self.training_interface_operative.run()
 
     def __convert_pdf_error(self):
         messagebox.showerror('Could not extract cells', 'You must select a PDF file')
@@ -109,6 +114,7 @@ class main_window:
         menubar.add_command(label="Edit Shorthand", command=self.__run_edit_shorthand)
         menubar.add_command(label="Ignore Rows", command=self.__run_ignore_rows)
         menubar.add_command(label="Default Directory", command=self.__run_default_directory)
+        menubar.add_command(label="Train Model", command=self.__run_train_model)
     
         self.root.config(menu=menubar)
     

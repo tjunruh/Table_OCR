@@ -9,7 +9,7 @@ class training:
     __image_size = 32
 
     def char_to_hex(self, char):
-        return int(hex(ord(char)).replace('0x', ''))
+        return int(hex(ord(char)).replace('0x', ''), 16)
 
     def resize(self, image):
         x, y = image.shape

@@ -53,11 +53,14 @@ class training_interface:
         if self.__image_path != '':
             self.__unapproved_image = ImageTk.PhotoImage(Image.open(self.__image_path))
             self.__image_label_container.configure(image=self.__unapproved_image)
-            self.__image_label_display.set(self.__image_label)
-            number_of_approved_images = self.file_manager_operative.get_approved_data_quantity()
-            self.__approved_image_display.set("Approved Data: " + str(number_of_approved_images))
         else:
-            self.__image_label_display.set("No New Images")
+            self.__image_label_display.set("No Images Available")
+            self.__image_label_container.configure(image='')
+            
+        self.__image_label_display.set(self.__image_label)
+        number_of_approved_images = self.file_manager_operative.get_approved_data_quantity()
+        self.__approved_image_display.set("Approved Data: " + str(number_of_approved_images))
+            
     
     def __train(self):
         if self.file_manager_operative.get_approved_data_quantity() > 0:

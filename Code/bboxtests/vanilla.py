@@ -8,10 +8,10 @@ from bboxbenchmark import bboxbenchmark, get_metrics
 
 args = sys.argv[1:]
 if not args:
-    raise Exception("Three arguments are required\n1: Directory\n2: Recursive analysis (True/False)\n3: Generate metrics (True/False)")
+    raise Exception("Three arguments are required\n1: Directory\n2: Method (components, contours, or xysplit)\n3: Recursive analysis (True/False)\n4: Generate metrics (True/False)")
 
 if not len(args) == 4:
-    raise Exception("Three arguments are required\n1: Method (components, contours, or xysplit)\n2: Directory\n3: Recursive analysis (True/False)\n4: Generate metrics (True/False)")
+    raise Exception("Three arguments are required\n1: Directory\n2: Method (components, contours, or xysplit)\n3: Recursive analysis (True/False)\n4: Generate metrics (True/False)")
 root_dir = args[0]
 method = args[1]
 recursive = args[2]

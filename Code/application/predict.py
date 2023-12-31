@@ -2,7 +2,6 @@ import tensorflow as tf
 import cv2
 from file_manager import file_manager
 from sklearn.preprocessing import LabelBinarizer
-import imutils
 import numpy as np
 import time
 from multiprocessing import Pool, cpu_count, Value

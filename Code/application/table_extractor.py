@@ -12,7 +12,7 @@ class table_extractor:
     def __pdf_to_jpg(self, file_path):
         self.__convert_pdf_error = False
         try:
-            jpgs = convert_from_path(file_path)
+            jpgs = convert_from_path(file_path, poppler_path='../../Release-23.07.0-0/poppler-23.07.0/Library/bin') 
 
             for page in range(len(jpgs)):
                 jpgs[page].save(

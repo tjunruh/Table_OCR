@@ -5,7 +5,6 @@ from sklearn.preprocessing import LabelBinarizer
 import numpy as np
 import time
 from multiprocessing import Pool, cpu_count, Value
-import skimage
 import os
 
 class predict:
@@ -118,7 +117,6 @@ class predict:
             threshold_level, image_bin = cv2.threshold(image_gray, 225, 255, cv2.THRESH_BINARY_INV)
         image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8), iterations=1)
         image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8), iterations=1)
-        image_bin = skimage.morphology.area_opening(image_bin)
         bounding_boxes = []
         centroids = []
         analysis = cv2.connectedComponentsWithStats(image_bin, 4, cv2.CV_32S)

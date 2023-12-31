@@ -454,7 +454,7 @@ class file_manager:
                         labels.append(row)
                     else:
                         self.delete_training_image(row[0])
-                        self.delete_training_image(str(row[0]).replace('.jpg', '.pkl'))
+                        self.delete_training_bounding_box(row[0].replace('.jpg', '.pkl'))
 
         with open(labels_file, 'w', newline='') as f:
             writer = csv.writer(f)
@@ -472,7 +472,7 @@ class file_manager:
                         labels.append(row)
                     else:
                         self.delete_training_image(row[0])
-                        self.delete_training_image(str(row[0]).replace('.jpg', '.pkl'))
+                        self.delete_training_bounding_box(row[0].replace('.jpg', '.pkl'))
 
         with open(labels_file, 'w', newline='') as f:
             writer = csv.writer(f)

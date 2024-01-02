@@ -11,8 +11,10 @@ class training:
     def char_to_hex(self, char):
         return hex(ord(char)).replace('0x', '')
 
-    def resize(self, image):
-        x, y = image.shape
+    def resize(self, image, bounding_box):
+        x1, y1, x2, y2 = bounding_box
+        x = x2 - x1
+        y = y2 - y1
         x_border = 0
         y_border = 0
         if x < self.__image_size:
@@ -20,7 +22,6 @@ class training:
 
         if y < self.__image_size:
             y_border = int(((self.__image_size - y) / 2.0))
-
         image = cv2.copyMakeBorder(image, top=y_border, bottom=y_border, left=x_border, right=x_border, borderType=cv2.BORDER_CONSTANT, value=0)
         image = cv2.resize(image, (self.__image_size, self.__image_size))
         return image
@@ -44,7 +45,7 @@ class training:
                 x1, y1, x2, y2 = box
                 box_expand = 5
                 character = cell[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
-                character = self.resize(character)
+                character = self.resize(character, box)
                 j = j + 1
                 self.file_manager_operative.save_training_image_output_image(character, str(j) + '.jpg')
                 characters.append(character)

@@ -127,9 +127,10 @@ class short_to_long:
 
     def expand_dashes_single(self, word, column_above):
         if word in self.dash_characters:
-            for entry in column_above:
+            for entry in column_above[::-1]:
                 if entry not in self.dash_characters:
                     word = entry
+                    break
         return word
 
     def inverse_char_set(self, word):

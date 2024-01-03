@@ -2,6 +2,7 @@ from file_manager import file_manager
 
 class short_to_long:
     file_manager_operative = file_manager()
+    dash_characters = ['II', '11', '1I', 'I1', 'U', 'N', 'H', 'W', '1', 'I']#, '9', '8', 'Y', 'E', '3', 'J']
 
     def short_to_long(self, predictions_input):
         predictions = predictions_input.copy()
@@ -61,7 +62,7 @@ class short_to_long:
         else:
             return False
 
-    def single_short_to_long(self, word):
+    def single_short_to_long(self, word, column_above):
         shorthand = {}
         shorthand = self.file_manager_operative.load_shorthand()
         char_set = {}
@@ -84,6 +85,8 @@ class short_to_long:
                     w = string_set[w]
                 word = word + w + ', '
             word = word[:len(word)-2]
+        elif word in self.dash_characters:
+            word = self.expand_dashes_single(word, column_above)
 
         for key, value in char_set.items():
             if word.find(key) != -1:
@@ -112,15 +115,22 @@ class short_to_long:
         rows_columns = self.file_manager_operative.load_rows_columns()
         columns = int(rows_columns[1])
         for i in range(len(predictions)):
-            if predictions[i] == '1' or predictions[i] == 'I':
+            if predictions[i] in self.dash_characters:
                 j = i - columns
                 while j > 0:
                     cell_above = predictions[j]
-                    if cell_above != '1' and cell_above != 'i':
+                    if cell_above not in self.dash_characters:
                         predictions[i] = cell_above
                         break
                     j = j - columns
         return predictions
+
+    def expand_dashes_single(self, word, column_above):
+        if word in self.dash_characters:
+            for entry in column_above:
+                if entry not in self.dash_characters:
+                    word = entry
+        return word
 
     def inverse_char_set(self, word):
         shorthand = {}

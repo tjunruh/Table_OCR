@@ -18,10 +18,12 @@ class table_display:
 
     def __update_cell(self, event):
         row, column, mode, value, *_ = event
+        columns = self.__sheet.get_column_data(column)
         currently_selected = self.__sheet.get_currently_selected()
         if currently_selected:
             if currently_selected.type_ == "cell":
-                word = self.short_to_long_operative.single_short_to_long(value)
+                column_data = self.__sheet.get_column_data(column)
+                word = self.short_to_long_operative.single_short_to_long(value, column_data[0:row])
                 self.__sheet.set_cell_data(row, column, value=word, redraw=True)
                 index = self.__get_index(row, column)
                 if index < len(self.__original_predictions):

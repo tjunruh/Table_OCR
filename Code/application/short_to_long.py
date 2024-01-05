@@ -1,8 +1,10 @@
 from file_manager import file_manager
+import itertools
 
 class short_to_long:
     file_manager_operative = file_manager()
-    dash_characters = ['II', '11', '1I', 'I1', 'U', 'N', 'H', 'W', '1', 'I']#, '9', '8', 'Y', 'E', '3', 'J']
+    dash_characters = ['V']
+    uncertain_characters = [['1', 'I'], ['5', 'S'], ['G', '6'], ['A', '4'], ['0', 'D']]
 
     def short_to_long(self, predictions_input):
         predictions = predictions_input.copy()
@@ -18,19 +20,6 @@ class short_to_long:
                 string_set[key] = value
 
         for i in range(len(predictions)):
-            if self.number_of_digits(predictions[i]) > 1:
-                if predictions[i].find('I') != -1:
-                    predictions[i] = predictions[i].replace('I', '1')
-
-                if predictions[i].find('S') != -1:
-                    predictions[i] = predictions[i].replace('S', '5')
-
-                if predictions[i].find('D') != -1:
-                    predictions[i] = predictions[i].replace('D', '0')
-                    
-            elif self.number_of_letters(predictions[i]) > 1:
-                predictions[i] = predictions[i].replace('5', 'S')
-  
             if predictions[i] in string_set:
                 predictions[i] = string_set[predictions[i]]
             elif ',' in predictions[i]:
@@ -40,11 +29,14 @@ class short_to_long:
                     if words[j] in string_set:
                         expanded_words = expanded_words + string_set[words[j]]
                     else:
-                        expanded_words = expanded_words + words[j]
+                        expanded_words = expanded_words + self.uncertainty_correction(words[j], string_set)
 
                     if j < (len(words) - 1):
                         expanded_words = expanded_words + ', ' 
                 predictions[i] = expanded_words
+            elif len(predictions[i]) > 0:
+                predictions[i] = self.uncertainty_correction(predictions[i], string_set)
+                #predictions[i] = self.number_count_correction(predictions[i], 2);
 
             for key, value in char_set.items():
                 if predictions[i].find(key) != -1:
@@ -146,4 +138,46 @@ class short_to_long:
                 word = word.replace(value, key)
 
         return word
-                
+
+    def uncertainty_correction(self, prediction, shorthand):
+        uncertain_characters = []
+        uncertain_characters_present = []
+        match_found = False
+        prediction_copy = prediction
+        for group in self.uncertain_characters:
+            for character in group:
+                if character in prediction_copy:
+                    uncertain_characters.append(group)
+                    uncertain_characters_present.append(character)
+                    break
+            
+        all_combinations = list(itertools.product(*uncertain_characters))
+        for i in range(len(uncertain_characters)):
+            group = uncertain_characters[i]
+            for j in range(len(group)):
+                prediction_copy = prediction_copy.replace(group[j], uncertain_characters_present[i])
+        last_iteration = uncertain_characters_present
+        for i in range(len(all_combinations)):
+            group = all_combinations[i]
+            for j in range(len(group)):
+                prediction_copy = prediction_copy.replace(last_iteration[j], group[j])
+                if prediction_copy in shorthand:
+                    prediction = shorthand[prediction_copy]
+                    match_found = True
+                    break
+            if match_found:
+                break
+            last_iteration = group
+        return prediction
+
+    def number_count_correction(self, prediction, number_count):
+        if self.number_of_digits(prediction) >= number_count:
+                prediction = prediction.replace('I', '1')
+                prediction = prediction.replace('S', '5')
+                prediction = prediction.replace('D', '0')
+        return prediction
+
+    def letter_count_correction(self, prediction, letter_count):
+        if self.number_of_letters(prediction) >= letter_count:
+                prediction = prediction.replace('5', 'S')
+        return prediction

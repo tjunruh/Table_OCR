@@ -87,6 +87,19 @@ class file_manager:
     
         return shorthand
 
+    def save_common_entries(self, common_entries):
+        path = self.settings_path / 'common_entries.pkl'
+        pickle.dump(common_entries, open(path, 'wb+'))
+
+    def load_common_entries(self):
+        common_entries = []
+        path = self.settings_path / 'common_entries.pkl'
+        if(os.path.isfile(path)):
+            with open(path, 'rb') as ce_load:
+                common_entries = pickle.load(ce_load)
+                
+        return common_entries
+
     def save_ignore(self, ignore):
         path = self.settings_path / 'ignore.pkl'
         pickle.dump(ignore, open(path, 'wb+'))

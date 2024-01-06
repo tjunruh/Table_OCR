@@ -4,7 +4,7 @@ import itertools
 class short_to_long:
     file_manager_operative = file_manager()
     dash_characters = ['V']
-    uncertain_characters = [['1', 'I'], ['5', 'S'], ['G', '6'], ['A', '4'], ['0', 'D']]
+    uncertain_characters = [['1', 'I'], ['5', 'S'], ['G', '6'], ['A', '4'], ['0', 'D', 'Q']]
 
     def short_to_long(self, predictions_input):
         predictions = predictions_input.copy()
@@ -12,6 +12,8 @@ class short_to_long:
         shorthand = self.file_manager_operative.load_shorthand()
         char_set = {}
         string_set = {}
+        common_entries = []
+        common_entries = self.file_manager_operative.load_common_entries()
         
         for key, value in shorthand.items():
             if key.find('*') != -1:
@@ -28,15 +30,17 @@ class short_to_long:
                 for j in range(len(words)):
                     if words[j] in string_set:
                         expanded_words = expanded_words + string_set[words[j]]
+                    elif words[j] in common_entries:
+                        expanded_words = expanded_words + words[j]
                     else:
-                        expanded_words = expanded_words + self.uncertainty_correction(words[j], string_set)
+                        expanded_words = expanded_words + self.uncertainty_correction(words[j], string_set, common_entries)
 
                     if j < (len(words) - 1):
                         expanded_words = expanded_words + ', ' 
                 predictions[i] = expanded_words
-            elif len(predictions[i]) > 0:
-                predictions[i] = self.uncertainty_correction(predictions[i], string_set)
-                #predictions[i] = self.number_count_correction(predictions[i], 2);
+            elif (len(predictions[i]) > 0) and (predictions[i] not in common_entries):
+                predictions[i] = self.uncertainty_correction(predictions[i], string_set, common_entries)
+                predictions[i] = self.number_count_correction(predictions[i], 2);
 
             for key, value in char_set.items():
                 if predictions[i].find(key) != -1:
@@ -139,10 +143,9 @@ class short_to_long:
 
         return word
 
-    def uncertainty_correction(self, prediction, shorthand):
+    def uncertainty_correction(self, prediction, shorthand, common_entries):
         uncertain_characters = []
         uncertain_characters_present = []
-        match_found = False
         prediction_copy = prediction
         for group in self.uncertain_characters:
             for character in group:
@@ -157,17 +160,18 @@ class short_to_long:
             for j in range(len(group)):
                 prediction_copy = prediction_copy.replace(group[j], uncertain_characters_present[i])
         last_iteration = uncertain_characters_present
+        matches = []
         for i in range(len(all_combinations)):
             group = all_combinations[i]
             for j in range(len(group)):
                 prediction_copy = prediction_copy.replace(last_iteration[j], group[j])
-                if prediction_copy in shorthand:
-                    prediction = shorthand[prediction_copy]
-                    match_found = True
-                    break
-            if match_found:
-                break
+            if prediction_copy in shorthand:
+                matches.append(shorthand[prediction_copy])
+            elif prediction_copy in common_entries:
+                matches.append(prediction_copy)
             last_iteration = group
+        if len(matches) == 1:
+            prediction = matches[0]
         return prediction
 
     def number_count_correction(self, prediction, number_count):

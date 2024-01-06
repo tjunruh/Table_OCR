@@ -7,6 +7,7 @@ from table_display import table_display
 from table_extractor import table_extractor
 from short_to_long import short_to_long
 from training_interface import training_interface
+from edit_common_entry import edit_common_entry
 from predict import predict
 from tkinter import filedialog
 from tkinter import ttk
@@ -26,6 +27,7 @@ class main_window:
     predict_operative = predict()
     short_to_long_operative = short_to_long()
     training_interface_operative = training_interface()
+    edit_common_entry_window = edit_common_entry()
     root = None
     __select_file_frame = None
     __display_file_frame = None
@@ -62,6 +64,9 @@ class main_window:
 
     def __run_train_model(self):
         self.training_interface_operative.run()
+
+    def __run_edit_common_entry(self):
+        self.edit_common_entry_window.run()
 
     def __convert_pdf_error(self):
         messagebox.showerror('Could not extract cells', 'You must select a PDF file')
@@ -111,10 +116,13 @@ class main_window:
         self.root.columnconfigure(2, weight=1)
 
         menubar = tk.Menu(self.root)
-        menubar.add_command(label="Edit Shorthand", command=self.__run_edit_shorthand)
-        menubar.add_command(label="Ignore Rows", command=self.__run_ignore_rows)
-        menubar.add_command(label="Default Directory", command=self.__run_default_directory)
-        menubar.add_command(label="Train Model", command=self.__run_train_model)
+        toolsmenubar = tk.Menu(menubar, tearoff=0)
+        toolsmenubar.add_command(label="Edit Shorthand", command=self.__run_edit_shorthand)
+        toolsmenubar.add_command(label="Edit Common Entry", command=self.__run_edit_common_entry)
+        toolsmenubar.add_command(label="Ignore Rows", command=self.__run_ignore_rows)
+        toolsmenubar.add_command(label="Default Directory", command=self.__run_default_directory)
+        toolsmenubar.add_command(label="Train Model", command=self.__run_train_model)
+        menubar.add_cascade(label="Tools", menu=toolsmenubar)
     
         self.root.config(menu=menubar)
     

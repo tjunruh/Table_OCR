@@ -11,21 +11,6 @@ class training:
     def char_to_hex(self, char):
         return hex(ord(char)).replace('0x', '')
 
-    def resize(self, image, bounding_box):
-        x1, y1, x2, y2 = bounding_box
-        x = x2 - x1
-        y = y2 - y1
-        x_border = 0
-        y_border = 0
-        if x < self.__image_size:
-            x_border = int(((self.__image_size - x) / 2.0))
-
-        if y < self.__image_size:
-            y_border = int(((self.__image_size - y) / 2.0))
-        image = cv2.copyMakeBorder(image, top=y_border, bottom=y_border, left=x_border, right=x_border, borderType=cv2.BORDER_CONSTANT, value=0)
-        image = cv2.resize(image, (self.__image_size, self.__image_size))
-        return image
-
     def get_data(self):
         image_paths = []
         image_labels = []
@@ -45,7 +30,7 @@ class training:
                 x1, y1, x2, y2 = box
                 box_expand = 5
                 character = cell[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
-                character = self.resize(character, box)
+                character = cv2.resize(character, (self.__image_size, self.__image_size), interpolation=cv2.INTER_CUBIC)
                 j = j + 1
                 self.file_manager_operative.save_training_image_output_image(character, str(j) + '.jpg')
                 characters.append(character)
@@ -67,8 +52,8 @@ class training:
         train_x, train_y = self.get_data()
         model = self.file_manager_operative.load_ocr_model()
         epochs = 100
-        variable = ReduceLROnPlateau(monitor='loss', factor = 0.2, patience = 2)
-        early_stop = EarlyStopping(monitor='loss', patience = 3)
+        variable = ReduceLROnPlateau(monitor='loss', factor = 0.2, patience = 10)
+        early_stop = EarlyStopping(monitor='loss', patience = 15)
         with open(str(self.file_manager_operative.training_output_path / "output.txt"), 'w') as sys.stdout:
             history = model.fit(train_x, train_y, epochs = epochs, callbacks=[early_stop, variable])
         self.file_manager_operative.save_ocr_model(model)

@@ -3,8 +3,8 @@ import itertools
 
 class short_to_long:
     file_manager_operative = file_manager()
-    dash_characters = ['V']
-    uncertain_characters = [['1', 'I'], ['5', 'S'], ['G', '6'], ['A', '4'], ['0', 'D', 'Q']]
+    dash_characters = ['V', 'W', 'Y']
+    uncertain_characters = [['1', 'I'], ['5', 'S'], ['G', '6'], ['A', '4'], ['0', 'D', 'Q', 'U']]
 
     def short_to_long(self, predictions_input):
         predictions = predictions_input.copy()
@@ -179,6 +179,7 @@ class short_to_long:
                 prediction = prediction.replace('I', '1')
                 prediction = prediction.replace('S', '5')
                 prediction = prediction.replace('D', '0')
+                prediction = prediction.replace('A', '4')
         return prediction
 
     def letter_count_correction(self, prediction, letter_count):

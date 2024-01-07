@@ -19,7 +19,6 @@ class predict:
         sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
         return sorted_bounding_boxes
 
-
     def __check_node_connections(self, node, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance):
         node_bounding_box, node_centroid = node
         index = 0
@@ -112,7 +111,7 @@ class predict:
         h, w, c = image_orig.shape
         image_orig = image_orig[(box_shrink):(h - box_shrink), (box_shrink):(w - box_shrink)]
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
-        threshold_level, image_bin = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        threshold_level, image_bin = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
         if threshold_level > 225:
             threshold_level, image_bin = cv2.threshold(image_gray, 225, 255, cv2.THRESH_BINARY_INV)
         image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8), iterations=1)
@@ -128,7 +127,7 @@ class predict:
 
             # Area of the component
             area = values[i, cv2.CC_STAT_AREA]
-            if (area > 75):
+            if (area > 65):
                 # Now extract the coordinate points
                 x1 = values[i, cv2.CC_STAT_LEFT]
                 y1 = values[i, cv2.CC_STAT_TOP]

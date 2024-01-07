@@ -2,8 +2,6 @@
 
 import sys
 
-import skimage
-
 sys.path.append("../tools")
 sys.path.append("../application")
 from file_manager import file_manager
@@ -27,7 +25,6 @@ class ConnCompBtrMorph:
     def __sort_bounding_boxes(self, bounding_boxes):
         sorted_bounding_boxes = sorted(bounding_boxes, key=lambda x: x[0])
         return sorted_bounding_boxes
-
 
     def __check_node_connections(self, node, components, grouped_components, analyzed_component_ids, x_tolerance, y_tolerance):
         node_bounding_box, node_centroid = node
@@ -121,10 +118,11 @@ class ConnCompBtrMorph:
         h, w, c = image_orig.shape
         image_orig = image_orig[(box_shrink):(h - box_shrink), (box_shrink):(w - box_shrink)]
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
-        threshold_level, image_bin = cv2.threshold(image_gray, 225, 255, cv2.THRESH_BINARY_INV)
+        threshold_level, image_bin = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+        if threshold_level > 255:
+            threshold_level, image_bin = cv2.threshold(image_gray, 225, 255, cv2.THRESH_BINARY_INV)
         image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8), iterations=1)
         image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8), iterations=1)
-        image_bin = skimage.morphology.area_opening(image_bin)
         bounding_boxes = []
         centroids = []
         analysis = cv2.connectedComponentsWithStats(image_bin, 4, cv2.CV_32S)
@@ -136,7 +134,7 @@ class ConnCompBtrMorph:
 
             # Area of the component
             area = values[i, cv2.CC_STAT_AREA]
-            if (area > 75):
+            if (area > 65):
                 # Now extract the coordinate points
                 x1 = values[i, cv2.CC_STAT_LEFT]
                 y1 = values[i, cv2.CC_STAT_TOP]
@@ -164,7 +162,7 @@ class ConnCompBtrMorph:
                     (x1, y1, x2, y2) = bounding_boxes[i]
                     cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
                     roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
-                    image_bin = cv2.threshold(roi, 225, 255, cv2.THRESH_BINARY_INV)[1]
+                    image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
                     try:
                         image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)
                         image_bin = image_bin.astype("float32") / 255.0

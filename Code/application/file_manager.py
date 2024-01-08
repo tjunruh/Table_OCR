@@ -74,6 +74,10 @@ class file_manager:
     def training_output_path(self) -> Path:
         return self.parent_dir / "Training_Output"
 
+    @property
+    def poppler_path(self) -> Path:
+        return self.parent_dir / "Release-23.07.0-0/poppler-23.07.0/Library/bin"
+
     def save_shorthand(self, shorthand):
         path = self.settings_path / 'shorthand.pkl'
         pickle.dump(shorthand, open(path, 'wb+'))

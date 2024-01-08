@@ -117,10 +117,10 @@ class main_window:
 
         menubar = tk.Menu(self.root)
         toolsmenubar = tk.Menu(menubar, tearoff=0)
-        toolsmenubar.add_command(label="Edit Shorthand", command=self.__run_edit_shorthand)
-        toolsmenubar.add_command(label="Edit Common Entry", command=self.__run_edit_common_entry)
-        toolsmenubar.add_command(label="Ignore Rows", command=self.__run_ignore_rows)
         toolsmenubar.add_command(label="Default Directory", command=self.__run_default_directory)
+        toolsmenubar.add_command(label="Edit Common Entry", command=self.__run_edit_common_entry)
+        toolsmenubar.add_command(label="Edit Shorthand", command=self.__run_edit_shorthand)
+        toolsmenubar.add_command(label="Ignore Rows", command=self.__run_ignore_rows)
         toolsmenubar.add_command(label="Train Model", command=self.__run_train_model)
         menubar.add_cascade(label="Tools", menu=toolsmenubar)
     

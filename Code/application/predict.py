@@ -107,9 +107,6 @@ class predict:
         y_tolerance = 30
         letters = []
         image_orig = cv2.imread(img)
-        box_shrink = 2
-        h, w, c = image_orig.shape
-        image_orig = image_orig[(box_shrink):(h - box_shrink), (box_shrink):(w - box_shrink)]
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
         threshold_level, image_bin = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
         if threshold_level > 225:

@@ -102,8 +102,7 @@ class table_extractor:
     def __save_boxes(self, boxes, img):
         for box in boxes:
             x, y, w, h = box
-            box_expand = 2
-            roi = img[(y - box_expand):(y + h + box_expand), (x - box_expand):(x + w + box_expand)]
+            roi = img[y:(y + h), x:(x + w)]
             self.file_manager_operative.save_raw_storage_single(roi, self.__num_boxes)
             self.__num_boxes += 1
         

@@ -61,7 +61,7 @@ example of an image that should be rejected. When training is ready to take plac
 
 ## How to Generate a Table
 
-![Handwritten Table](Readme_Images/Image_7)
+![Handwritten Table](Readme_Images/Image_7.png)
 
 The table above is used as an example. Note that the pages should be scanned so that the top is facing towards the left for the application to run properly. 
 When handwriting the table, both pencil and pen can be used. If using a pencil, write somewhat darkly for best results. Characters might be missed if the handwriting 

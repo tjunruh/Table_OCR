@@ -21,11 +21,11 @@ This can be useful if PDFs being sent through the application are always located
 
 ![Edit Common Entry Interface](Readme_Images/Image_2.png)
 
-It is important to let the application know about entries expected to be found in tables. That way, the program will not be 
-confused by characters that are often mixed up such as ‘1’ and ‘I’, ‘S’ and ‘5’, or ‘G’ and ‘6’. For example, if the program 
-makes a prediction that there is “GG” in a cell, but 6G is entered into common entries, the program will correct itself and put  
-“6G” instead of “GG” in the cell. Note that the program will not change anything if there are two or more possibilities for correction. 
-For example, if “S6” is predicted, but “SG” and “5G” are in the system, no modification will be made to the original prediction since there  
+It is important to let the application know about entries expected to be found in tables. That way, the program will not be
+confused by characters that are often mixed up such as ‘1’ and ‘I’, ‘S’ and ‘5’, or ‘G’ and ‘6’. For example, if the program
+makes a prediction that there is “GG” in a cell, but 6G is entered into common entries, the program will correct itself and put
+“6G” instead of “GG” in the cell. Note that the program will not change anything if there are two or more possibilities for correction.
+For example, if “S6” is predicted, but “SG” and “5G” are in the system, no modification will be made to the original prediction since there
 is more than one option for correction.
  
 ## Edit Shorthand
@@ -47,13 +47,16 @@ is not required that these rows be ignored, but it can speed up the conversion a
 
 ## Train Model
 
-When the model makes mistakes predicting what handwritten characters are in a cell, it is possible to conduct training to help it better understand an individual's handwriting. 
-Images are saved to the Train Model tool whenever a modification is made within a cell of the generated table and enter or tab is pressed. Note that the image will only be saved 
-if the modification has the same number of characters as the original prediction. This method is not foolproof if an incorrect modification is entered by the user. Consequently, 
-images must be approved before they are ready to be used for training. If the label does not match the image, it should be rejected. Otherwise, it can be approved. Generally it is 
-better to have a large number of approved images before training is conducted. Twenty five or more approved images should bring the best results. When training is ready to take place, 
-press “Train”.
 ![Image that should be approved](Readme_Images/Image_5.png)
+
+When the model makes mistakes predicting what handwritten characters are in a cell, it is possible to conduct training to help it better understand an
+individual's handwriting. Images are saved to the Train Model tool whenever a modification is made within a cell of the generated table and enter or tab
+is pressed. Note that the image will only be saved if the modification has the same number of characters as the original prediction. This method is not
+foolproof if an incorrect modification is entered by the user. Consequently, images must be approved before they are ready to be used for training.
+If the label does not match the image, it should be rejected. Otherwise, it can be approved. Generally it is better to have a large number of approved images before
+training is conducted. Twenty five or more approved images should bring the best results. The image above is an example of an image that should be approved. Below is an
+example of an image that should be rejected. When training is ready to take place, press “Train”
+
 ![Image that should be rejected](Readme_Images/Image_6.png)
 
 ## How to Generate a Table

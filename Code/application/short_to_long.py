@@ -63,26 +63,27 @@ class short_to_long:
         shorthand = self.file_manager_operative.load_shorthand()
         char_set = {}
         string_set = {}
+        uppercase_word = word.upper()
         for key, value in shorthand.items():
             if key.find('*') != -1:
                 char_set[key.replace('*', '')] = value
             else:
                 string_set[key] = value
 
-        if word in string_set:
-            word = string_set[word]
+        if uppercase_word in string_set.keys():
+            word = string_set[uppercase_word]
         elif word.find(',') != -1:
             word = word.replace(', ', ',')
             words = []
             words = word.split(',')
             word = ''
             for w in words:
-                if w in string_set:     
-                    w = string_set[w]
+                if w.upper() in string_set.keys():     
+                    w = string_set[w.upper()]
                 word = word + w + ', '
             word = word[:len(word)-2]
-        elif word in self.dash_characters:
-            word = self.expand_dashes_single(word, column_above)
+        elif uppercase_word in self.dash_characters:
+            word = self.expand_dashes_single(uppercase_word, column_above)
 
         for key, value in char_set.items():
             if word.find(key) != -1:

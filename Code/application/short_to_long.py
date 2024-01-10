@@ -22,13 +22,13 @@ class short_to_long:
                 string_set[key] = value
 
         for i in range(len(predictions)):
-            if predictions[i] in string_set:
+            if predictions[i] in string_set.keys():
                 predictions[i] = string_set[predictions[i]]
             elif ',' in predictions[i]:
                 words = predictions[i].split(',')
                 expanded_words = ''
                 for j in range(len(words)):
-                    if words[j] in string_set:
+                    if words[j] in string_set.keys():
                         expanded_words = expanded_words + string_set[words[j]]
                     elif words[j] in common_entries:
                         expanded_words = expanded_words + words[j]

@@ -64,12 +64,15 @@ class training_interface:
     
     def __train(self):
         if self.file_manager_operative.get_approved_data_quantity() > 0:
-            self.__train_output_display.set("Training")
+            self.__train_output_label.config(bg="red")
+            self.__train_output_display.set("Training\nin Progress")
+            self.__root.update_idletasks()
             self.training_operative.run_training()
-            self.__train_output_display.set("Training Done")
+            self.__train_output_display.set("Training\nCompleted")
             self.file_manager_operative.delete_approved_training_images()
             number_of_approved_images = self.file_manager_operative.get_approved_data_quantity()
             self.__approved_image_display.set("Approved Data: " + str(number_of_approved_images))
+            self.__train_output_label.config(bg="green")
     
     def __load_images(self):
         image_paths = []

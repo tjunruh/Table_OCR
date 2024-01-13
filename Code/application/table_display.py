@@ -35,7 +35,7 @@ class table_display:
                             if char not in self.__valid_chars:
                                 valid_string = False
                                 break
-                        if valid_string:     
+                        if valid_string and self.file_manager_operative.get_number_of_training_images() < 1000:     
                             self.file_manager_operative.save_training_image(index, value, self.__bounding_boxes[index])
                     
         

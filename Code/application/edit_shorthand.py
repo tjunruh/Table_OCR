@@ -56,7 +56,7 @@ class edit_shorthand:
     def __ok(self):
         self.__shorthand.clear()
         for e1, e2, b1 in self.__shorthand_list:
-            if((e1.get() != "") and (e2.get() != "")):
+            if((e1.get() != "") and (e2.get() != "") and (e1.get() not in self.__shorthand.keys())):
                 self.__shorthand[e1.get()] = e2.get()
         self.file_manager_operative.save_shorthand(self.__shorthand)
         self.__close()

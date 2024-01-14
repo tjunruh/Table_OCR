@@ -52,7 +52,7 @@ class edit_common_entry:
     def __ok(self):
         self.__common_entries.clear()
         for e, b in self.__common_entry_list:
-            if(e.get() != ""):
+            if(e.get() != "" and e.get() not in self.__common_entries):
                 self.__common_entries.append(e.get())
         self.file_manager_operative.save_common_entries(self.__common_entries)
         self.__close()

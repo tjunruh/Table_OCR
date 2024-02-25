@@ -28,8 +28,7 @@ class training:
             cell = cells[i]
             for box in image_bounding_boxes[i]:
                 x1, y1, x2, y2 = box
-                box_expand = 5
-                character = cell[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
+                character = cell[y1:y2, x1:x2]
                 character = cv2.resize(character, (self.__image_size, self.__image_size), interpolation=cv2.INTER_CUBIC)
                 j = j + 1
                 self.file_manager_operative.save_training_image_output_image(character, str(j) + '.jpg')

@@ -114,12 +114,9 @@ class ConnCompBtrMorph:
         y_tolerance = 30
         letters = []
         image_orig = cv2.imread(img)
-        box_shrink = 2
-        h, w, c = image_orig.shape
-        image_orig = image_orig[(box_shrink):(h - box_shrink), (box_shrink):(w - box_shrink)]
         image_gray = cv2.cvtColor(image_orig, cv2.COLOR_BGR2GRAY)
         threshold_level, image_bin = cv2.threshold(image_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
-        if threshold_level > 255:
+        if threshold_level > 225:
             threshold_level, image_bin = cv2.threshold(image_gray, 225, 255, cv2.THRESH_BINARY_INV)
         image_bin = cv2.erode(image_bin, np.ones((2, 2), np.uint8), iterations=1)
         image_bin = cv2.dilate(image_bin, np.ones((3, 3), np.uint8), iterations=1)
@@ -160,8 +157,12 @@ class ConnCompBtrMorph:
             while i < len(bounding_boxes):
                 if bounding_boxes[i] != ',':
                     (x1, y1, x2, y2) = bounding_boxes[i]
-                    cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
-                    roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
+                    x1_adjusted = x1 - box_expand
+                    y1_adjusted = y1 - box_expand
+                    x2_adjusted = x2 + box_expand
+                    y2_adjusted = y2 + box_expand
+                    cv2.rectangle(new_img, [x1_adjusted, y1_adjusted], [x2_adjusted, y2_adjusted], (0, 255, 0), 3)
+                    roi = image_gray[y1_adjusted:y2_adjusted, x1_adjusted:x2_adjusted]
                     image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
                     try:
                         image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)
@@ -172,6 +173,7 @@ class ConnCompBtrMorph:
                         ypred = self.__LB.inverse_transform(ypred)
                         [x] = self.__hex_to_char(ypred)
                         letters.append(x)
+                        bounding_boxes[i] = (x1_adjusted, y1_adjusted, x2_adjusted, y2_adjusted)
                         i = i + 1
                         box_expand = 5
                     except Exception as e:

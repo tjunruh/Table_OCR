@@ -101,7 +101,7 @@ class predict:
             updated_bounding_boxes_subgroup = []
             i = i + 1
         return updated_bounding_boxes
-        
+    
     def __get_letters(self, img):
         x_tolerance = 20
         y_tolerance = 30
@@ -150,8 +150,12 @@ class predict:
             while i < len(bounding_boxes):
                 if bounding_boxes[i] != ',':
                     (x1, y1, x2, y2) = bounding_boxes[i]
-                    cv2.rectangle(new_img, [x1, y1], [x2, y2], (0, 255, 0), 3)
-                    roi = image_gray[(y1 - box_expand):(y2 + box_expand), (x1 - box_expand):(x2 + box_expand)]
+                    x1_adjusted = x1 - box_expand
+                    y1_adjusted = y1 - box_expand
+                    x2_adjusted = x2 + box_expand
+                    y2_adjusted = y2 + box_expand
+                    cv2.rectangle(new_img, [x1_adjusted, y1_adjusted], [x2_adjusted, y2_adjusted], (0, 255, 0), 3)
+                    roi = image_gray[y1_adjusted:y2_adjusted, x1_adjusted:x2_adjusted]
                     image_bin = cv2.threshold(roi, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
                     try:
                         image_bin = cv2.resize(image_bin, (32, 32), interpolation=cv2.INTER_CUBIC)
@@ -162,6 +166,7 @@ class predict:
                         ypred = self.__LB.inverse_transform(ypred)
                         [x] = self.__hex_to_char(ypred)
                         letters.append(x)
+                        bounding_boxes[i] = (x1_adjusted, y1_adjusted, x2_adjusted, y2_adjusted)
                         i = i + 1
                         box_expand = 5
                     except Exception as e:

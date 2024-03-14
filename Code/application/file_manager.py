@@ -23,7 +23,8 @@ class file_manager:
             self.predictions_path,
             self.raw_storage_path,
             self.processed_storage_path,
-            self.page_path,
+            self.raw_page_path,
+            self.processed_page_path,
             self.bounding_boxes_path,
             self.training_path,
             self.training_info_path,
@@ -55,8 +56,12 @@ class file_manager:
         return self.parent_dir / "Storage/Processed"
 
     @property
-    def page_path(self) -> Path:
-        return self.parent_dir / "Pages"
+    def raw_page_path(self) -> Path:
+        return self.parent_dir / "Pages/Raw"
+
+    @property
+    def processed_page_path(self) -> Path:
+        return self.parent_dir / "Pages/Processed"
 
     @property
     def bounding_boxes_path(self) -> Path:
@@ -247,6 +252,40 @@ class file_manager:
     def save_ocr_model(self, model):
         path = str(self.parent_dir / "Model")
         model.save(path)
+
+    def save_raw_page_single(self, image, image_num):
+        folder = self.raw_page_path
+        filename = folder / f"{image_num}.jpg"
+        cv2.imwrite(str(filename), image)
+
+    def clear_raw_page(self):
+        folder = self.raw_page_path
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+    def save_processed_page_single(self, image, image_num):
+        folder = self.processed_page_path
+        filename = folder / f"{image_num}.jpg"
+        cv2.imwrite(str(filename), image)
+
+    def clear_processed_page(self):
+        folder = self.processed_page_path
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
 
     def save_raw_storage_single(self, image, image_num):
         folder = self.raw_storage_path

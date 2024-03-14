@@ -81,7 +81,7 @@ class main_window:
         ignore = self.file_manager_operative.load_ignore()
         self.file_manager_operative.clear_processed_storage()
         self.file_manager_operative.clear_raw_storage()
-        if self.extract_cells_operative.extract_cells(self.__file_name, self.__convert_pdf_error) != -1:
+        if self.extract_cells_operative.extract_cells(self.__file_name) != -1:
             cells = self.file_manager_operative.get_raw_storage()
             if self.__multiprocessing:
                 cpu_num = int(cpu_count()/2)
@@ -106,6 +106,8 @@ class main_window:
             if predictions:
                 expanded_predictions = self.short_to_long_operative.short_to_long(predictions)
                 self.table_display_window.run(expanded_predictions, int(self.__columns.get()), bounding_boxes, predictions)
+        else:
+            self.__convert_pdf_error()
      
     def run(self):    
         self.__file_name = ""

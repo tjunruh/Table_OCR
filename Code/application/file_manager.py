@@ -33,6 +33,9 @@ class file_manager:
             p.mkdir(parents=True, exist_ok=True)
         self.make_labels_file()
 
+        if os.path.isfile(str(self.imported_settings_path) + ".zip"):
+            self.import_settings()
+
     @property
     def settings_path(self) -> Path:
         return self.parent_dir / "Settings"
@@ -78,6 +81,14 @@ class file_manager:
     @property
     def training_output_path(self) -> Path:
         return self.parent_dir / "Training_Output"
+
+    @property
+    def extracted_settings_path(self) -> Path:
+        return self.parent_dir / "../Table_OCR_Settings"
+
+    @property
+    def imported_settings_path(self) -> Path:
+        return self.parent_dir / "Table_OCR_Settings"
 
     @property
     def poppler_path(self) -> Path:
@@ -581,3 +592,39 @@ class file_manager:
         filename = self.training_info_path / "labels.csv"
         if not os.path.isfile(filename):
             open(filename, 'x')
+
+    def export_settings(self):
+        os.mkdir(self.extracted_settings_path)
+        shutil.copytree(self.settings_path, str(self.extracted_settings_path) + "/Settings")
+        shutil.copytree(self.raw_storage_path, str(self.extracted_settings_path) + "/Storage/Raw")
+        shutil.copytree(self.processed_storage_path, str(self.extracted_settings_path) + "/Storage/Processed")
+        shutil.copytree(self.raw_page_path, str(self.extracted_settings_path) + "/Pages/Raw")
+        shutil.copytree(self.processed_page_path, str(self.extracted_settings_path) + "/Pages/Processed")
+        shutil.copytree(self.training_path, str(self.extracted_settings_path) + "/Training")
+        shutil.copytree(self.training_info_path, str(self.extracted_settings_path) + "/Labels")
+        shutil.copytree(self.training_output_path, str(self.extracted_settings_path) + "/Training_Output")
+        shutil.make_archive(self.extracted_settings_path, 'zip', self.extracted_settings_path)
+        shutil.rmtree(self.extracted_settings_path)
+
+    def import_settings(self):
+        shutil.unpack_archive(str(self.imported_settings_path) + ".zip", self.imported_settings_path, "zip")
+        shutil.rmtree(self.settings_path)
+        shutil.rmtree(self.raw_storage_path)
+        shutil.rmtree(self.processed_storage_path)
+        shutil.rmtree(self.raw_page_path)
+        shutil.rmtree(self.processed_page_path)
+        shutil.rmtree(self.training_path)
+        shutil.rmtree(self.training_info_path)
+        shutil.rmtree(self.training_output_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Settings", self.settings_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Storage/Raw", self.raw_storage_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Storage/Processed", self.processed_storage_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Pages/Raw", self.raw_page_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Pages/Processed", self.processed_page_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Training", self.training_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Labels", self.training_info_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Training_Output", self.training_output_path)
+        shutil.rmtree(self.imported_settings_path)
+        os.remove(str(self.imported_settings_path) + ".zip")
+        
+        

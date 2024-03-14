@@ -56,6 +56,9 @@ class main_window:
     def __run_edit_shorthand(self):
         self.edit_shorthand_window.run()
 
+    def __run_export_settings(self):
+        self.file_manager_operative.export_settings()
+
     def __run_ignore_rows(self):
         self.ignore_rows_window.run()
 
@@ -120,6 +123,7 @@ class main_window:
         menubar = tk.Menu(self.root)
         toolsmenubar = tk.Menu(menubar, tearoff=0)
         toolsmenubar.add_command(label="Default Directory", command=self.__run_default_directory)
+        toolsmenubar.add_command(label="Export Settings", command=self.__run_export_settings)
         toolsmenubar.add_command(label="Edit Common Entry", command=self.__run_edit_common_entry)
         toolsmenubar.add_command(label="Edit Shorthand", command=self.__run_edit_shorthand)
         toolsmenubar.add_command(label="Ignore Rows", command=self.__run_ignore_rows)

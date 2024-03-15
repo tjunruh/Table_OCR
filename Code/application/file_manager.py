@@ -603,6 +603,7 @@ class file_manager:
         shutil.copytree(self.training_path, str(self.extracted_settings_path) + "/Training")
         shutil.copytree(self.training_info_path, str(self.extracted_settings_path) + "/Labels")
         shutil.copytree(self.training_output_path, str(self.extracted_settings_path) + "/Training_Output")
+        shutil.copytree(str(self.parent_dir) + "/Model", str(self.extracted_settings_path) + "/Model")
         shutil.make_archive(self.extracted_settings_path, 'zip', self.extracted_settings_path)
         shutil.rmtree(self.extracted_settings_path)
 
@@ -616,6 +617,7 @@ class file_manager:
         shutil.rmtree(self.training_path)
         shutil.rmtree(self.training_info_path)
         shutil.rmtree(self.training_output_path)
+        shutil.rmtree(str(self.parent_dir) + "/Model")
         shutil.copytree(str(self.imported_settings_path) + "/Settings", self.settings_path)
         shutil.copytree(str(self.imported_settings_path) + "/Storage/Raw", self.raw_storage_path)
         shutil.copytree(str(self.imported_settings_path) + "/Storage/Processed", self.processed_storage_path)
@@ -624,6 +626,7 @@ class file_manager:
         shutil.copytree(str(self.imported_settings_path) + "/Training", self.training_path)
         shutil.copytree(str(self.imported_settings_path) + "/Labels", self.training_info_path)
         shutil.copytree(str(self.imported_settings_path) + "/Training_Output", self.training_output_path)
+        shutil.copytree(str(self.imported_settings_path) + "/Model", str(self.parent_dir) + "/Model")
         shutil.rmtree(self.imported_settings_path)
         os.remove(str(self.imported_settings_path) + ".zip")
         
